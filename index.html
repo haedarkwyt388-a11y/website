@@ -2,90 +2,167 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra 3D Animation</title>
+<title>Real Login Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
     margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:radial-gradient(circle at top,#00ff88,#000);
-    perspective:1200px;
-    overflow:hidden;
     font-family:Arial;
-}
-
-/* كارد أساسي */
-.card{
-    width:340px;
-    height:220px;
-    background:rgba(255,255,255,0.12);
-    backdrop-filter:blur(10px);
-    border-radius:30px;
-    box-shadow:
-        0 30px 80px rgba(0,0,0,.9),
-        inset 0 0 40px rgba(0,255,136,.3);
-    transform-style:preserve-3d;
-    transition:transform .15s ease-out;
+    background:linear-gradient(135deg,#00ff88,#001a0f);
     display:flex;
-    flex-direction:column;
     justify-content:center;
     align-items:center;
+    min-height:100vh;
 }
 
-/* عنوان */
-.card h1{
-    color:#00ff88;
-    transform:translateZ(50px);
-}
-.card p{
-    color:#caffea;
-    transform:translateZ(35px);
+.card{
+    width:350px;
+    padding:25px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(8px);
+    border-radius:20px;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
 }
 
-/* دخول سينمائي */
-.enter{
-    animation:enter 1.2s ease forwards;
+input,button{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+    border:none;
+    border-radius:8px;
 }
-@keyframes enter{
-    0%{
-        transform:scale(.2) rotateX(90deg);
-        opacity:0;
-    }
-    100%{
-        transform:scale(1) rotateX(0);
-        opacity:1;
-    }
+
+button{
+    background:#00ff88;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.hidden{display:none}
+
+.gallery{
+    width:90%;
+    max-width:900px;
+}
+
+.items{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:10px;
+}
+
+.item{
+    background:rgba(255,255,255,.15);
+    padding:8px;
+    border-radius:10px;
+    text-align:center;
+}
+
+img{
+    width:100%;
+    border-radius:8px;
+}
+.logout{
+    background:red;
+    color:white;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card enter" id="card">
-    <h1>3D VAULT</h1>
-    <p>Ultra Animation Mode</p>
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+    <h2>Login / Register</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Enter</button>
+</div>
+
+<!-- VAULT -->
+<div class="card gallery hidden" id="vaultBox">
+    <h2 id="welcome"></h2>
+    <input type="file" id="upload" accept="image/*" multiple>
+    <div class="items" id="items"></div>
+    <button class="logout" onclick="logout()">Logout</button>
 </div>
 
 <script>
-const card = document.getElementById("card");
+const loginBox = document.getElementById("loginBox");
+const vaultBox = document.getElementById("vaultBox");
+const itemsBox = document.getElementById("items");
+const welcome = document.getElementById("welcome");
 
-document.addEventListener("mousemove", e=>{
-    const x = (window.innerWidth/2 - e.clientX)/25;
-    const y = (window.innerHeight/2 - e.clientY)/25;
-    card.style.transform = `
-        rotateY(${x}deg)
-        rotateX(${y}deg)
-        scale(1.05)
-    `;
-});
+function login(){
+    const u = username.value.trim();
+    const p = password.value.trim();
+    if(!u || !p){ alert("Fill fields"); return; }
 
-document.addEventListener("mouseleave", ()=>{
-    card.style.transform = "rotateX(0) rotateY(0) scale(1)";
-});
+    let users = JSON.parse(localStorage.getItem("users")||"{}");
+
+    // إذا المستخدم جديد نسجله
+    if(!users[u]){
+        users[u] = { password:p, files:[] };
+    }else{
+        if(users[u].password !== p){
+            alert("Wrong password");
+            return;
+        }
+    }
+
+    localStorage.setItem("users",JSON.stringify(users));
+    localStorage.setItem("currentUser",u);
+
+    showVault();
+}
+
+function showVault(){
+    const user = localStorage.getItem("currentUser");
+    if(!user) return;
+
+    loginBox.classList.add("hidden");
+    vaultBox.classList.remove("hidden");
+    welcome.innerText = "Welcome " + user;
+    loadFiles();
+}
+
+function loadFiles(){
+    itemsBox.innerHTML="";
+    const users = JSON.parse(localStorage.getItem("users"));
+    const user = localStorage.getItem("currentUser");
+
+    users[user].files.forEach(src=>{
+        const div = document.createElement("div");
+        div.className="item";
+        div.innerHTML=`<img src="${src}">`;
+        itemsBox.appendChild(div);
+    });
+}
+
+upload.onchange = ()=>{
+    const users = JSON.parse(localStorage.getItem("users"));
+    const user = localStorage.getItem("currentUser");
+
+    [...upload.files].forEach(file=>{
+        const r = new FileReader();
+        r.onload = ()=>{
+            users[user].files.push(r.result);
+            localStorage.setItem("users",JSON.stringify(users));
+            loadFiles();
+        }
+        r.readAsDataURL(file);
+    });
+};
+
+function logout(){
+    localStorage.removeItem("currentUser");
+    location.reload();
+}
+
+if(localStorage.getItem("currentUser")){
+    showVault();
+}
 </script>
 
 </body>
