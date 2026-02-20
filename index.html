@@ -1,42 +1,210 @@
-= `<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="unlock(${i})">🔒</div>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Private Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg1:#1b102a;
+  --bg2:#2d0f3a;
+  --pink:#ff5fd2;
+  --purple:#7c4dff;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
+
+body{
+  margin:0;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:white;
+  min-height:100vh;
+}
+
+header{
+  padding:20px;
+  text-align:center;
+  font-size:26px;
+  font-weight:bold;
+  background:linear-gradient(90deg,var(--purple),var(--pink));
+}
+
+.upload-box{
+  padding:20px;
+  text-align:center;
+}
+
+.upload-box input,
+.upload-box input[type="password"]{
+  background:#00000055;
+  border:1px solid var(--pink);
+  color:white;
+  padding:10px;
+  border-radius:8px;
+  margin:5px;
+}
+
+.upload-box button{
+  background:linear-gradient(90deg,var(--purple),var(--pink));
+  border:none;
+  padding:10px 18px;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+#items{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+  padding:20px;
+}
+
+.item{
+  background:#00000055;
+  border-radius:15px;
+  padding:10px;
+  position:relative;
+  overflow:hidden;
+}
+
+.item img,
+.item video{
+  width:100%;
+  border-radius:10px;
+}
+
+.locked{
+  text-align:center;
+  padding:40px 10px;
+  font-size:18px;
+  color:var(--pink);
+}
+
+.actions{
+  position:absolute;
+  top:8px;
+  right:8px;
+  display:flex;
+  gap:6px;
+}
+
+.actions div{
+  cursor:pointer;
+  background:#00000099;
+  padding:4px 6px;
+  border-radius:6px;
+}
+
+footer{
+  position:relative;
+  margin-top:40px;
+  padding:30px 20px;
+  background:linear-gradient(90deg,var(--purple),var(--pink));
+  text-align:center;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  🔐 Private Vault
+</header>
+
+<div class="upload-box">
+  <input type="file" id="file">
+  <input type="password" id="pwd" placeholder="Password">
+  <button onclick="save()">Save</button>
+</div>
+
+<div id="items"></div>
+
+<footer>
+  ELYAS SAEED ©
+</footer>
+
+<script>
+const itemsBox = document.getElementById("items");
+
+function save(){
+  const fileInput = document.getElementById("file");
+  const pwd = document.getElementById("pwd").value;
+
+  if(!fileInput.files[0]) return alert("Choose a file");
+  if(!pwd) return alert("Enter password");
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const data = JSON.parse(localStorage.getItem("vault")) || [];
+    data.push({
+      src: reader.result,
+      type: file.type,
+      password: pwd,
+      locked: true
+    });
+    localStorage.setItem("vault", JSON.stringify(data));
+    fileInput.value="";
+    document.getElementById("pwd").value="";
+    load();
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function load(){
+  itemsBox.innerHTML="";
+  const data = JSON.parse(localStorage.getItem("vault")) || [];
+
+  data.forEach((item,i)=>{
+    const div = document.createElement("div");
+    div.className="item";
+
+    if(item.locked){
+      div.innerHTML=`
+        <div class="locked">🔒 Locked</div>
+        <div class="actions">
+          <div onclick="unlock(${i})">🔓</div>
+          <div onclick="del(${i})">❌</div>
+        </div>
+      `;
+    }else{
+      div.innerHTML = item.type.startsWith("video")
+        ? `<video controls src="${item.src}"></video>`
+        : `<img src="${item.src}">`;
     }
+
     itemsBox.appendChild(div);
   });
 }
 
-// Unlock a file
 function unlock(i){
-  const data = JSON.parse(localStorage.getItem("vault"));
+  const data = JSON.parse(localStorage.getItem("vault")) || [];
   const pwd = prompt("Enter password");
 
-  if (pwd !== data[i].password) return alert("Wrong password");
+  if(pwd !== data[i].password) return alert("Wrong password ❌");
 
-  // Play unlock sound
-  sound.play();
-
-  // Replace locked content with the actual content
-  const div = document.createElement("div");
-  div.className = "item";
-  div.innerHTML = data[i].type.startsWith("video")
-    ? `<video controls src="${data[i].src}"></video>`
-    : `<img src="${data[i].src}">`;
-
-  itemsBox.replaceChild(div, itemsBox.children[i]);
-}
-
-// Delete an item from the vault
-function del(i){
-  if (!confirm("Are you sure you want to delete this item?")) return;
-
-  const data = JSON.parse(localStorage.getItem("vault"));
-  data.splice(i, 1);
-  localStorage.setItem("vault", JSON.stringify(data));
+  data[i].locked=false;
+  localStorage.setItem("vault",JSON.stringify(data));
   load();
 }
 
-// Load saved items on page load
-load();
+function del(i){
+  if(!confirm("Delete this item?")) return;
+  const data = JSON.parse(localStorage.getItem("vault")) || [];
+  data.splice(i,1);
+  localStorage.setItem("vault",JSON.stringify(data));
+  load();
+}
 
+load();
 </script>
 
 </body>
