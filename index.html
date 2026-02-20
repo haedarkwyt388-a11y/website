@@ -2,209 +2,211 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Private Vault</title>
+<title>Elyas Saeedawi Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-  --bg1:#1b102a;
-  --bg2:#2d0f3a;
-  --pink:#ff5fd2;
-  --purple:#7c4dff;
-}
-
-*{
-  box-sizing:border-box;
-  font-family:Arial, sans-serif;
-}
+*{box-sizing:border-box;font-family:Arial}
 
 body{
   margin:0;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
-  color:white;
   min-height:100vh;
+  background:linear-gradient(135deg,#fff,#eaeaea);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  perspective:1200px;
 }
 
-header{
-  padding:20px;
-  text-align:center;
-  font-size:26px;
+.name3d{
+  position:fixed;
+  top:15px;
+  right:20px;
   font-weight:bold;
-  background:linear-gradient(90deg,var(--purple),var(--pink));
 }
 
-.upload-box{
-  padding:20px;
-  text-align:center;
+.card{
+  width:360px;
+  padding:25px;
+  border-radius:25px;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(10px);
+  box-shadow:0 30px 80px rgba(0,0,0,.25);
 }
 
-.upload-box input,
-.upload-box input[type="password"]{
-  background:#00000055;
-  border:1px solid var(--pink);
-  color:white;
-  padding:10px;
-  border-radius:8px;
-  margin:5px;
-}
+.hidden{display:none}
 
-.upload-box button{
-  background:linear-gradient(90deg,var(--purple),var(--pink));
+input,textarea,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
   border:none;
-  padding:10px 18px;
-  color:white;
-  border-radius:10px;
+  border-radius:12px;
+}
+
+button{
+  background:#000;
+  color:#fff;
+  font-weight:bold;
   cursor:pointer;
 }
 
-#items{
+.vault{
+  width:95%;
+  max-width:700px;
+}
+
+.items{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
   gap:15px;
-  padding:20px;
 }
 
 .item{
-  background:#00000055;
-  border-radius:15px;
+  background:#fff;
   padding:10px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
   position:relative;
-  overflow:hidden;
+  animation:pop .4s ease;
 }
 
-.item img,
-.item video{
+@keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+.delete{
+  position:absolute;
+  top:6px;
+  right:8px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.lock{
+  font-size:35px;
+  cursor:pointer;
+}
+
+img,video{
   width:100%;
   border-radius:10px;
-}
-
-.locked{
-  text-align:center;
-  padding:40px 10px;
-  font-size:18px;
-  color:var(--pink);
-}
-
-.actions{
-  position:absolute;
-  top:8px;
-  right:8px;
-  display:flex;
-  gap:6px;
-}
-
-.actions div{
-  cursor:pointer;
-  background:#00000099;
-  padding:4px 6px;
-  border-radius:6px;
-}
-
-footer{
-  position:relative;
-  margin-top:40px;
-  padding:30px 20px;
-  background:linear-gradient(90deg,var(--purple),var(--pink));
-  text-align:center;
-  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  🔐 Private Vault
-</header>
+<div class="name3d">Elyas Saeedawi</div>
 
-<div class="upload-box">
-  <input type="file" id="file">
-  <input type="password" id="pwd" placeholder="Password">
-  <button onclick="save()">Save</button>
+<div class="card" id="login">
+  <h2>Login</h2>
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="login()">Enter</button>
 </div>
 
-<div id="items"></div>
+<div class="card vault hidden" id="vault">
+  <h2>Your Private Vault</h2>
 
-<footer>
-  ELYAS SAEED ©
-</footer>
+  <textarea id="note" placeholder="Write anything..."></textarea>
+  <button onclick="saveText()">Save Text</button>
+
+  <input type="file" id="file" multiple accept="image/*,video/*">
+
+  <div class="items" id="items"></div>
+</div>
+
+<audio id="unlockSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav">
+</audio>
 
 <script>
-const itemsBox = document.getElementById("items");
+const loginBox = login;
+const vaultBox = vault;
+const itemsBox = items;
+const sound = document.getElementById("unlockSound");
 
-function save(){
-  const fileInput = document.getElementById("file");
-  const pwd = document.getElementById("pwd").value;
+function login(){
+  if(!user.value || !pass.value) return alert("Fill fields");
+  localStorage.setItem("user",user.value);
+  loginBox.classList.add("hidden");
+  vaultBox.classList.remove("hidden");
+  load();
+}
 
-  if(!fileInput.files[0]) return alert("Choose a file");
-  if(!pwd) return alert("Enter password");
+function saveText(){
+  if(!note.value) return;
+  const data = JSON.parse(localStorage.getItem("vault")||"[]");
+  data.push({type:"text",content:note.value});
+  localStorage.setItem("vault",JSON.stringify(data));
+  note.value="";
+  load();
+}
 
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    const data = JSON.parse(localStorage.getItem("vault")) || [];
-    data.push({
-      src: reader.result,
-      type: file.type,
-      password: pwd,
-      locked: true
-    });
-    localStorage.setItem("vault", JSON.stringify(data));
-    fileInput.value="";
-    document.getElementById("pwd").value="";
-    load();
-  };
-
-  reader.readAsDataURL(file);
+file.onchange=()=>{
+  [...file.files].forEach(f=>{
+    const pwd=prompt("Set password");
+    if(!pwd) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const data=JSON.parse(localStorage.getItem("vault")||"[]");
+      data.push({type:f.type,src:r.result,password:pwd});
+      localStorage.setItem("vault",JSON.stringify(data));
+      load();
+    }
+    r.readAsDataURL(f);
+  });
 }
 
 function load(){
   itemsBox.innerHTML="";
-  const data = JSON.parse(localStorage.getItem("vault")) || [];
+  const data=JSON.parse(localStorage.getItem("vault")||"[]");
 
-  data.forEach((item,i)=>{
-    const div = document.createElement("div");
+  data.forEach((d,i)=>{
+    const div=document.createElement("div");
     div.className="item";
 
-    if(item.locked){
-      div.innerHTML=`
-        <div class="locked">🔒 Locked</div>
-        <div class="actions">
-          <div onclick="unlock(${i})">🔓</div>
-          <div onclick="del(${i})">❌</div>
-        </div>
-      `;
+    if(d.type==="text"){
+      div.innerHTML=`<div class="delete" onclick="del(${i})">❌</div><p>${d.content}</p>`;
     }else{
-      div.innerHTML = item.type.startsWith("video")
-        ? `<video controls src="${item.src}"></video>`
-        : `<img src="${item.src}">`;
+      div.innerHTML=`<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="openFile(${i})">🔒</div>`;
     }
 
     itemsBox.appendChild(div);
   });
 }
 
-function unlock(i){
-  const data = JSON.parse(localStorage.getItem("vault")) || [];
-  const pwd = prompt("Enter password");
+function openFile(i){
+  const data=JSON.parse(localStorage.getItem("vault"));
+  const pwd=prompt("Enter password");
+  if(pwd!==data[i].password) return alert("Wrong password");
 
-  if(pwd !== data[i].password) return alert("Wrong password ❌");
+  sound.play();
 
-  data[i].locked=false;
-  localStorage.setItem("vault",JSON.stringify(data));
-  load();
+  const div=document.createElement("div");
+  div.className="item";
+  div.innerHTML=data[i].type.startsWith("video")
+    ? `<video controls src="${data[i].src}"></video>`
+    : `<img src="${data[i].src}">`;
+
+  itemsBox.replaceChild(div,itemsBox.children[i]);
 }
 
 function del(i){
-  if(!confirm("Delete this item?")) return;
-  const data = JSON.parse(localStorage.getItem("vault")) || [];
+  if(!confirm("Delete this?")) return;
+  const data=JSON.parse(localStorage.getItem("vault"));
   data.splice(i,1);
   localStorage.setItem("vault",JSON.stringify(data));
   load();
 }
 
-load();
+if(localStorage.getItem("user")){
+  loginBox.classList.add("hidden");
+  vaultBox.classList.remove("hidden");
+  load();
+}
 </script>
 
 </body>
