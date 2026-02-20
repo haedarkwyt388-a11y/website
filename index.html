@@ -2,189 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>3D Auth Pro</title>
+<title>3D Private Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{
-    box-sizing:border-box;
-    font-family:Segoe UI,sans-serif;
-}
-
+*{box-sizing:border-box;font-family:Arial}
 body{
     margin:0;
-    height:100vh;
+    min-height:100vh;
+    background:radial-gradient(circle at top,#00ff88,#000);
     display:flex;
     justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,#00ffcc,#7f00ff);
-    perspective:1500px;
+    perspective:1200px;
     overflow:hidden;
 }
 
-.page{
-    width:350px;
-    padding:30px;
-    border-radius:30px;
-    background:rgba(0,0,0,0.35);
-    backdrop-filter:blur(14px);
-    box-shadow:
-        0 30px 80px rgba(0,0,0,.7),
-        inset 0 0 30px rgba(255,255,255,.05);
+.name3d{
+    position:fixed;
+    top:15px;
+    right:20px;
+    color:#00ff88;
+    font-weight:bold;
+    animation:float 3s ease-in-out infinite;
+}
+@keyframes float{
+    50%{transform:rotateY(20deg)}
+}
+
+.card{
+    width:340px;
+    padding:25px;
+    border-radius:25px;
+    background:rgba(255,255,255,.1);
+    backdrop-filter:blur(8px);
+    box-shadow:0 20px 60px rgba(0,0,0,.8);
+    transition:.6s ease;
     transform-style:preserve-3d;
-    transition:all .8s ease;
-    position:absolute;
+}
+.card:hover{
+    transform:rotateY(15deg) rotateX(10deg);
 }
 
-.hidden{
-    opacity:0;
-    pointer-events:none;
-    transform:rotateY(90deg) translateZ(-300px);
-}
-
-h2{
-    text-align:center;
-    color:#00ffcc;
-    margin-bottom:20px;
-}
-
-input{
+input,button{
     width:100%;
-    padding:12px;
-    margin-bottom:12px;
-    border-radius:12px;
+    padding:10px;
+    margin:8px 0;
     border:none;
-    outline:none;
+    border-radius:10px;
 }
-
 button{
-    width:100%;
-    padding:12px;
-    border-radius:14px;
-    border:none;
-    background:linear-gradient(135deg,#00ff00,#00ffaa);
+    background:#00ff88;
     font-weight:bold;
     cursor:pointer;
 }
 
-.switch{
-    margin-top:15px;
-    text-align:center;
-    color:white;
-    cursor:pointer;
-    font-size:14px;
+.hidden{display:none}
+
+.gallery{
+    width:95%;
+    max-width:900px;
+}
+.items{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:15px;
 }
 
-img{
-    width:90px;
-    height:90px;
-    border-radius:50%;
-    display:block;
-    margin:10px auto;
-    object-fit:cover;
+.item{
+    background:rgba(255,255,255,.1);
+    backdrop-filter:blur(6px);
+    border-radius:15px;
+    padding:10px;
+    text-align:center;
+    transition:.5s;
 }
 
-.dashboard h1{
-    color:white;
-    text-align:center;
+.lock{
+    font-size:40px;
+    color:#00ff88;
+    transform-style:preserve-3d;
+}
+.unlocking{
+    animation:unlock .8s ease forwards;
+}
+@keyframes unlock{
+    50%{transform:rotateY(90deg) scale(1.2)}
+    100%{transform:rotateY(180deg) scale(0);opacity:0}
 }
 
-.dashboard p{
-    color:#00ffcc;
-    text-align:center;
+img,video{
+    width:100%;
+    border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="page" id="register">
-    <h2>Register</h2>
-    <input id="rUser" placeholder="Username">
-    <input id="rPass" type="number" placeholder="Password">
-    <input id="rEmail" placeholder="Email">
-    <input id="rImg" type="file" accept="image/*">
-    <button onclick="register()">Create</button>
-    <div class="switch" onclick="showLogin()">Login</div>
+<div class="name3d">Elyas Saeedawi</div>
+
+<div class="card" id="login">
+<h2>Login</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Enter</button>
 </div>
 
-<div class="page hidden" id="login">
-    <h2>Login</h2>
-    <input id="lUser" placeholder="Username">
-    <input id="lPass" type="number" placeholder="Password">
-    <button onclick="login()">Enter</button>
-    <div class="switch" onclick="showRegister()">Register</div>
+<div class="card gallery hidden" id="gallery">
+<h2>Private Gallery</h2>
+<input type="file" id="file" multiple accept="image/*,video/*">
+<div class="items" id="items"></div>
 </div>
 
-<div class="page hidden dashboard" id="dash">
-    <img id="dImg">
-    <h1 id="dUser"></h1>
-    <p id="dEmail"></p>
-    <button onclick="logout()">Logout</button>
-</div>
+<audio id="unlockSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav" type="audio/wav">
+</audio>
 
 <script>
-// Page switching
-function showLogin(){
-    register.classList.add("hidden");
-    login.classList.remove("hidden");
-}
-function showRegister(){
-    login.classList.add("hidden");
-    register.classList.remove("hidden");
-}
+const loginBox = login;
+const galleryBox = gallery;
+const itemsBox = items;
+const sound = document.getElementById("unlockSound");
 
-// Register
-function register(){
-    const u=rUser.value,p=rPass.value,e=rEmail.value,f=rImg.files[0];
-    if(!u||!p||!e||!f)return alert("Fill all fields");
-
-    const r=new FileReader();
-    r.onload=()=>{
-        localStorage.setItem("user_"+u,JSON.stringify({
-            user:u,pass:p,email:e,img:r.result
-        }));
-        showLogin();
-    }
-    r.readAsDataURL(f);
-}
-
-// Login
 function login(){
-    const u=lUser.value,p=lPass.value;
-    const data=localStorage.getItem("user_"+u);
-    if(!data)return alert("User not found");
-    const d=JSON.parse(data);
-    if(d.pass!==p)return alert("Wrong password");
-
-    dUser.innerText=d.user;
-    dEmail.innerText=d.email;
-    dImg.src=d.img;
-
-    login.classList.add("hidden");
-    dash.classList.remove("hidden");
+    if(!user.value || !pass.value) return alert("Fill fields");
+    localStorage.setItem("user",user.value);
+    loginBox.classList.add("hidden");
+    galleryBox.classList.remove("hidden");
+    load();
 }
 
-function logout(){
-    dash.classList.add("hidden");
-    login.classList.remove("hidden");
+file.onchange = ()=>{
+    [...file.files].forEach(f=>{
+        const pwd = prompt("Set password for this file");
+        if(!pwd) return;
+        const r = new FileReader();
+        r.onload = ()=>{
+            const data = JSON.parse(localStorage.getItem("vault")||"[]");
+            data.push({type:f.type,src:r.result,password:pwd});
+            localStorage.setItem("vault",JSON.stringify(data));
+            load();
+        }
+        r.readAsDataURL(f);
+    });
 }
 
-// 3D Mouse movement
-document.querySelectorAll('.page').forEach(card=>{
-    card.addEventListener('mousemove',e=>{
-        const r=card.getBoundingClientRect();
-        const x=e.clientX-r.left;
-        const y=e.clientY-r.top;
-        const cx=r.width/2;
-        const cy=r.height/2;
-        const rx=(y-cy)/20;
-        const ry=(x-cx)/20;
-        card.style.transform=`rotateX(${-rx}deg) rotateY(${ry}deg)`;
+function load(){
+    itemsBox.innerHTML="";
+    const data = JSON.parse(localStorage.getItem("vault")||"[]");
+    data.forEach((d,i)=>{
+        const div = document.createElement("div");
+        div.className="item";
+        div.innerHTML=`<div class="lock">🔒</div>`;
+        div.onclick=()=>unlock(i);
+        itemsBox.appendChild(div);
     });
-    card.addEventListener('mouseleave',()=>{
-        card.style.transform='rotateX(0) rotateY(0)';
-    });
-});
+}
+
+function unlock(i){
+    const data = JSON.parse(localStorage.getItem("vault"));
+    const pwd = prompt("Enter password");
+    if(pwd !== data[i].password) return alert("Wrong password");
+
+    const lock = itemsBox.children[i].querySelector(".lock");
+    lock.classList.add("unlocking");
+    sound.play();
+
+    setTimeout(()=>{
+        const div = document.createElement("div");
+        div.className="item";
+        div.innerHTML = data[i].type.startsWith("video")
+          ? `<video controls src="${data[i].src}"></video>`
+          : `<img src="${data[i].src}">`;
+        itemsBox.replaceChild(div, itemsBox.children[i]);
+    },800);
+}
+
+if(localStorage.getItem("user")){
+    loginBox.classList.add("hidden");
+    galleryBox.classList.remove("hidden");
+    load();
+}
 </script>
 
 </body>
