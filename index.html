@@ -2,61 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vault</title>
+<title>Elyas Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 *{
-  margin:0;
-  padding:0;
   box-sizing:border-box;
-  font-family:Poppins,sans-serif;
+  font-family:system-ui, sans-serif;
 }
-
 body{
+  margin:0;
   background:#000;
-  color:white;
+  color:#fff;
 }
 
-/* HEADER */
-.header{
-  height:60px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 15px;
-  border-bottom:1px solid #222;
-}
-
-.header h2{
-  font-size:20px;
+/* Header */
+header{
+  padding:15px;
+  font-size:22px;
+  font-weight:bold;
   background:linear-gradient(90deg,#a855f7,#22d3ee);
   -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  color:transparent;
 }
 
-.header button{
-  background:none;
-  border:none;
-  color:#ef4444;
-  font-size:14px;
-  cursor:pointer;
-}
-
-/* GRID */
-.grid{
+/* Grid like Instagram */
+#grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:2px;
 }
 
+/* Item */
 .item{
   position:relative;
-  background:#111;
   aspect-ratio:1/1;
   overflow:hidden;
+  background:#111;
 }
-
 .item img,
 .item video{
   width:100%;
@@ -64,147 +47,149 @@ body{
   object-fit:cover;
 }
 
-/* LOCK */
-.locked{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  background:linear-gradient(135deg,#020617,#0f172a);
-  cursor:pointer;
+/* Label under image/video */
+.label{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  padding:4px 0;
+  font-size:12px;
+  text-align:center;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(6px);
+  color:#a855f7;
+  letter-spacing:1px;
 }
 
-/* ICONS */
+/* Icons */
 .icons{
   position:absolute;
-  bottom:5px;
-  right:5px;
+  top:6px;
+  right:6px;
   display:flex;
-  gap:5px;
+  gap:6px;
 }
-
 .icons div{
   background:rgba(0,0,0,.6);
-  padding:4px 6px;
-  border-radius:6px;
-  font-size:14px;
+  padding:4px;
+  border-radius:50%;
   cursor:pointer;
+  font-size:14px;
 }
 
-/* ADD BUTTON */
-.add{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#8b5cf6,#22d3ee);
+/* Locked */
+.locked{
+  width:100%;
+  height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:32px;
-  color:black;
-  cursor:pointer;
-  box-shadow:0 0 25px rgba(139,92,246,.8);
 }
 
-/* INPUT */
-#file{
-  display:none;
+/* Floating add button */
+#addBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  border:none;
+  font-size:30px;
+  color:#000;
+  background:linear-gradient(135deg,#a855f7,#22d3ee);
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h2>Elyas Vault</h2>
-  <button onclick="logout()">Logout</button>
-</div>
+<header>Elyas Vault</header>
 
-<div class="grid" id="grid"></div>
+<div id="grid"></div>
 
-<div class="add" onclick="file.click()">+</div>
-<input type="file" id="file" accept="image/*,video/*" onchange="addFile()">
+<input type="file" id="fileInput" accept="image/*,video/*" hidden>
+<button id="addBtn">+</button>
 
 <script>
 const grid = document.getElementById("grid");
-const file = document.getElementById("file");
+const fileInput = document.getElementById("fileInput");
 
+/* Load items */
 function load(){
-  grid.innerHTML="";
-  const data = JSON.parse(localStorage.getItem("vault")) || [];
+  grid.innerHTML = "";
+  const data = JSON.parse(localStorage.getItem("vault") || "[]");
+
   data.forEach((item,i)=>{
     const div = document.createElement("div");
-    div.className="item";
+    div.className = "item";
 
     if(item.locked){
-      div.innerHTML=`<div class="locked" onclick="unlock(${i})">🔒</div>`;
+      div.innerHTML = `
+        <div class="locked">🔒</div>
+        <div class="label">${item.type.startsWith("video") ? "Video" : "Image"}</div>
+        <div class="icons">
+          <div onclick="unlock(${i})">🔓</div>
+          <div onclick="del(${i})">❌</div>
+        </div>
+      `;
     }else{
-      div.innerHTML = item.type.startsWith("video")
-        ? `<video src="${item.src}" muted></video>`
-        : `<img src="${item.src}">`;
+      div.innerHTML = `
+        ${item.type.startsWith("video")
+          ? `<video src="${item.src}" muted></video>`
+          : `<img src="${item.src}">`
+        }
+        <div class="label">${item.type.startsWith("video") ? "Video" : "Image"}</div>
+        <div class="icons">
+          <div onclick="del(${i})">❌</div>
+        </div>
+      `;
     }
-
-    div.innerHTML += `
-      <div class="icons">
-        <div onclick="lock(${i})">🔒</div>
-        <div onclick="del(${i})">❌</div>
-      </div>`;
     grid.appendChild(div);
   });
 }
 
-function addFile(){
-  const f = file.files[0];
-  if(!f) return;
+/* Add file */
+document.getElementById("addBtn").onclick = ()=> fileInput.click();
+
+fileInput.onchange = ()=>{
+  const file = fileInput.files[0];
+  if(!file) return;
 
   const reader = new FileReader();
   reader.onload = ()=>{
-    const data = JSON.parse(localStorage.getItem("vault")) || [];
+    const data = JSON.parse(localStorage.getItem("vault") || "[]");
     data.push({
       src: reader.result,
-      type: f.type,
-      locked: false,
-      password: null
+      type: file.type,
+      locked: true,
+      password: prompt("Set password") || ""
     });
-    localStorage.setItem("vault",JSON.stringify(data));
+    localStorage.setItem("vault", JSON.stringify(data));
     load();
   };
-  reader.readAsDataURL(f);
-}
+  reader.readAsDataURL(file);
+};
 
-function lock(i){
-  const pwd = prompt("Set password");
-  if(!pwd) return;
-  const data = JSON.parse(localStorage.getItem("vault"));
-  data[i].locked = true;
-  data[i].password = pwd;
-  localStorage.setItem("vault",JSON.stringify(data));
-  load();
-}
-
+/* Unlock */
 function unlock(i){
-  const pwd = prompt("Enter password");
   const data = JSON.parse(localStorage.getItem("vault"));
+  const pwd = prompt("Enter password");
   if(pwd !== data[i].password) return alert("Wrong password");
   data[i].locked = false;
-  data[i].password = null;
-  localStorage.setItem("vault",JSON.stringify(data));
+  localStorage.setItem("vault", JSON.stringify(data));
   load();
 }
 
+/* Delete */
 function del(i){
-  if(!confirm("Delete this item?")) return;
+  if(!confirm("Delete item?")) return;
   const data = JSON.parse(localStorage.getItem("vault"));
   data.splice(i,1);
-  localStorage.setItem("vault",JSON.stringify(data));
+  localStorage.setItem("vault", JSON.stringify(data));
   load();
-}
-
-function logout(){
-  window.location.href="index.html";
 }
 
 load();
