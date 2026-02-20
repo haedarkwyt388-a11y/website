@@ -103,6 +103,7 @@ img,video{
 
 <div class="name3d">Elyas Saeedawi</div>
 
+<!-- Login Form -->
 <div class="card" id="login">
   <h2>Login</h2>
   <input id="user" placeholder="Username">
@@ -110,6 +111,7 @@ img,video{
   <button onclick="login()">Enter</button>
 </div>
 
+<!-- Private Vault Form -->
 <div class="card vault hidden" id="vault">
   <h2>Your Private Vault</h2>
 
@@ -127,103 +129,116 @@ img,video{
 </audio>
 
 <script>
-const loginBox = login;
-const vaultBox = vault;
-const itemsBox = items;
+// Get elements
+const loginBox = document.getElementById("login");
+const vaultBox = document.getElementById("vault");
+const itemsBox = document.getElementById("items");
 const sound = document.getElementById("unlockSound");
 
+// Login function
 function login(){
-  if(!user.value || !pass.value) return alert("Fill fields");
-  localStorage.setItem("user",user.value);
-  localStorage.setItem("pass",pass.value);
+  const userInput = document.getElementById("user").value;
+  const passInput = document.getElementById("pass").value;
+
+  // Check if fields are empty
+  if(!userInput || !passInput) return alert("Please fill in both fields");
+
+  // Store credentials in localStorage for simplicity (this can be improved for security)
+  localStorage.setItem("user", userInput);
+  localStorage.setItem("pass", passInput);
+
+  // Switch to the vault screen
   loginBox.classList.add("hidden");
   vaultBox.classList.remove("hidden");
+
+  // Load saved items from vault
   load();
 }
 
+// Save text function
 function saveText(){
-  if(!note.value) return;
-  const data = JSON.parse(localStorage.getItem("vault")||"[]");
-  data.push({type:"text",content:note.value});
-  localStorage.setItem("vault",JSON.stringify(data));
-  note.value="";
+  const noteInput = document.getElementById("note").value;
+  if (!noteInput) return alert("Please enter some text");
+
+  // Get the existing data from localStorage, or start with an empty array
+  const data = JSON.parse(localStorage.getItem("vault") || "[]");
+  data.push({type: "text", content: noteInput});
+  localStorage.setItem("vault", JSON.stringify(data));
+
+  // Clear the text input and reload items
+  document.getElementById("note").value = "";
   load();
 }
 
-file.onchange=()=>{
-  [...file.files].forEach(f=>{
-    const pwd=prompt("Set password for this file");
-    if(!pwd) return;
-    const r=new FileReader();
-    r.onload=()=>{
-      const data=JSON.parse(localStorage.getItem("vault")||"[]");
-      data.push({type:f.type,src:r.result,password:pwd});
-      localStorage.setItem("vault",JSON.stringify(data));
+// Save file function
+document.getElementById("file").onchange = () => {
+  const files = document.getElementById("file").files;
+  [...files].forEach(file => {
+    const pwd = prompt("Set password for this file");
+    if (!pwd) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = JSON.parse(localStorage.getItem("vault") || "[]");
+      data.push({type: file.type, src: reader.result, password: pwd});
+      localStorage.setItem("vault", JSON.stringify(data));
       load();
     }
-    r.readAsDataURL(f);
+    reader.readAsDataURL(file);
   });
-}
+};
 
-function saveFile(){
-  const fileInput = document.getElementById('file');
-  const file = fileInput.files[0];
-  if (!file) return;
-  const pwd = prompt("Set password for this file");
-  if (!pwd) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const data = JSON.parse(localStorage.getItem("vault") || "[]");
-    data.push({ type: file.type, src: reader.result, password: pwd });
-    localStorage.setItem("vault", JSON.stringify(data));
-    load();
-  };
-  reader.readAsDataURL(file);
-}
-
+// Load vault items
 function load(){
-  itemsBox.innerHTML="";
-  const data=JSON.parse(localStorage.getItem("vault")||"[]");
+  itemsBox.innerHTML = "";
+  const data = JSON.parse(localStorage.getItem("vault") || "[]");
 
-  data.forEach((d,i)=>{
-    const div=document.createElement("div");
-    div.className="item";
+  // Loop through each item and display it
+  data.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "item";
 
-    if(d.type==="text"){
-      div.innerHTML=`<div class="delete" onclick="del(${i})">❌</div><p>${d.content}</p>`;
-    }else{
-      div.innerHTML=`<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="openFile(${i})">🔒</div>`;
+    if (item.type === "text") {
+      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><p>${item.content}</p>`;
+    } else {
+      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="unlock(${i})">🔒</div>`;
     }
-
     itemsBox.appendChild(div);
   });
 }
 
-function openFile(i){
-  const data=JSON.parse(localStorage.getItem("vault"));
-  const pwd=prompt("Enter password");
-  if(pwd!==data[i].password) return alert("Wrong password");
+// Unlock a file
+function unlock(i){
+  const data = JSON.parse(localStorage.getItem("vault"));
+  const pwd = prompt("Enter password");
 
+  if (pwd !== data[i].password) return alert("Wrong password");
+
+  // Play unlock sound
   sound.play();
 
-  const div=document.createElement("div");
-  div.className="item";
-  div.innerHTML=data[i].type.startsWith("video")
+  // Replace locked content with the actual content
+  const div = document.createElement("div");
+  div.className = "item";
+  div.innerHTML = data[i].type.startsWith("video")
     ? `<video controls src="${data[i].src}"></video>`
     : `<img src="${data[i].src}">`;
 
-  itemsBox.replaceChild(div,itemsBox.children[i]);
+  itemsBox.replaceChild(div, itemsBox.children[i]);
 }
 
+// Delete an item from the vault
 function del(i){
-  if(!confirm("Delete this?")) return;
-  const data=JSON.parse(localStorage.getItem("vault"));
-  data.splice(i,1);
-  localStorage.setItem("vault",JSON.stringify(data));
+  if (!confirm("Are you sure you want to delete this item?")) return;
+
+  const data = JSON.parse(localStorage.getItem("vault"));
+  data.splice(i, 1);
+  localStorage.setItem("vault", JSON.stringify(data));
   load();
 }
 
-if(localStorage.getItem("user")){
+// If user is already logged in, show the vault
+if (localStorage.getItem("user")) {
   loginBox.classList.add("hidden");
   vaultBox.classList.remove("hidden");
   load();
