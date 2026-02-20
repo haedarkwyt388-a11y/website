@@ -106,13 +106,15 @@ img,video{
 
 <div class="name3d">Elyas Saeedawi</div>
 
+<!-- صفحة الدخول -->
 <div class="card" id="login">
     <h2>Login</h2>
     <input id="user" placeholder="Username">
     <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Enter</button>
+    <button type="button" onclick="login()">Enter</button>
 </div>
 
+<!-- الصفحة الثانية -->
 <div class="card gallery hidden" id="gallery">
     <h2>Private Gallery</h2>
     <input type="file" id="file" multiple accept="image/*,video/*">
@@ -133,7 +135,7 @@ const pass = document.getElementById("pass");
 const file = document.getElementById("file");
 
 function login(){
-    if(!user.value || !pass.value){
+    if(user.value.trim()==="" || pass.value.trim()===""){
         alert("Fill all fields");
         return;
     }
@@ -143,7 +145,7 @@ function login(){
     load();
 }
 
-file.onchange = ()=>{
+file.addEventListener("change", ()=>{
     [...file.files].forEach(f=>{
         const pwd = prompt("Set password for this file");
         if(!pwd) return;
@@ -157,7 +159,7 @@ file.onchange = ()=>{
         }
         r.readAsDataURL(f);
     });
-}
+});
 
 function load(){
     itemsBox.innerHTML="";
