@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Private Vault</title>
+<title>Your Private Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -87,11 +87,6 @@ button{
   font-size:14px;
 }
 
-.lock{
-  font-size:35px;
-  cursor:pointer;
-}
-
 img,video{
   width:100%;
   border-radius:10px;
@@ -103,16 +98,8 @@ img,video{
 
 <div class="name3d">Elyas Saeedawi</div>
 
-<!-- Login Form -->
-<div class="card" id="login">
-  <h2>Login</h2>
-  <input id="user" placeholder="Username">
-  <input id="pass" type="password" placeholder="Password">
-  <button onclick="login()">Enter</button>
-</div>
-
 <!-- Private Vault Form -->
-<div class="card vault hidden" id="vault">
+<div class="card vault">
   <h2>Your Private Vault</h2>
 
   <textarea id="note" placeholder="Write anything..."></textarea>
@@ -130,30 +117,9 @@ img,video{
 
 <script>
 // Get elements
-const loginBox = document.getElementById("login");
 const vaultBox = document.getElementById("vault");
 const itemsBox = document.getElementById("items");
 const sound = document.getElementById("unlockSound");
-
-// Login function
-function login(){
-  const userInput = document.getElementById("user").value;
-  const passInput = document.getElementById("pass").value;
-
-  // Check if fields are empty
-  if(!userInput || !passInput) return alert("Please fill in both fields");
-
-  // Store credentials in localStorage for simplicity (this can be improved for security)
-  localStorage.setItem("user", userInput);
-  localStorage.setItem("pass", passInput);
-
-  // Switch to the vault screen
-  loginBox.classList.add("hidden");
-  vaultBox.classList.remove("hidden");
-
-  // Load saved items from vault
-  load();
-}
 
 // Save text function
 function saveText(){
@@ -237,12 +203,9 @@ function del(i){
   load();
 }
 
-// If user is already logged in, show the vault
-if (localStorage.getItem("user")) {
-  loginBox.classList.add("hidden");
-  vaultBox.classList.remove("hidden");
-  load();
-}
+// Load saved items on page load
+load();
+
 </script>
 
 </body>
