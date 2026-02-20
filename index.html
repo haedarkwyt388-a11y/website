@@ -1,94 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Your Private Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Website</title>
 
 <style>
-*{box-sizing:border-box;font-family:Arial}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Arial, sans-serif;
+}
 
 body{
-  margin:0;
+  background:#0f0f1a;
   min-height:100vh;
-  background:linear-gradient(135deg,#FF00A6,#00D2FF);
+  color:white;
+}
+
+/* محتوى تجريبي */
+.main{
+  min-height:150vh;
   display:flex;
-  justify-content:center;
   align-items:center;
-  perspective:1200px;
+  justify-content:center;
+  font-size:30px;
+  opacity:0.3;
+}
+
+/* ===== Footer ===== */
+.footer-section{
+  position:relative;
+  background:linear-gradient(135deg,#7f00ff,#e100ff);
   overflow:hidden;
+  padding-top:120px;
 }
 
-.name3d{
-  position:fixed;
-  top:15px;
-  right:20px;
-  font-weight:bold;
-  font-size:24px;
-  color: #ffffff;
-  text-shadow: 2px 2px 5px #000000;
-}
-
-.card{
-  width:360px;
-  padding:25px;
-  border-radius:25px;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(8px);
-  box-shadow:0 30px 80px rgba(0,0,0,.3);
-}
-
-input,textarea,button{
+/* gooey animation */
+.gooey{
+  position:absolute;
+  top:-80px;
   width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:none;
-  border-radius:12px;
-  background-color: #fff;
+  height:160px;
+  filter: blur(20px);
+}
+
+.gooey span{
+  position:absolute;
+  width:200px;
+  height:200px;
+  background:#ff7adf;
+  border-radius:50%;
+  animation: float 6s infinite ease-in-out;
+}
+
+.gooey span:nth-child(1){ left:10%; animation-delay:0s;}
+.gooey span:nth-child(2){ left:40%; animation-delay:2s;}
+.gooey span:nth-child(3){ left:70%; animation-delay:4s;}
+
+@keyframes float{
+  0%{ transform:translateY(0);}
+  50%{ transform:translateY(40px);}
+  100%{ transform:translateY(0);}
+}
+
+/* محتوى الفوتر */
+.footer-name{
+  text-align:center;
+  font-size:26px;
+  font-weight:bold;
+  margin-bottom:30px;
+}
+
+.footer-content{
+  display:flex;
+  justify-content:space-around;
+  flex-wrap:wrap;
+  gap:30px;
+  padding:0 20px 40px;
+}
+
+.footer-content h4{
+  margin-bottom:10px;
+}
+
+.footer-content a{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+  margin-bottom:6px;
+  opacity:0.85;
+}
+
+.footer-content a:hover{
+  opacity:1;
+}
+
+input[type="file"]{
+  margin-top:10px;
+  color:white;
 }
 
 button{
-  background:#00B5E2;
-  color:#fff;
+  margin-top:10px;
+  padding:6px 14px;
+  border:none;
+  border-radius:6px;
+  background:#fff;
+  color:#7f00ff;
+  cursor:pointer;
   font-weight:bold;
-  cursor:pointer;
 }
 
-.vault{
-  width:95%;
-  max-width:700px;
-}
-
-.items{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:15px;
-}
-
-.item{
-  background:#ffffff;
-  padding:10px;
-  border-radius:15px;
-  box-shadow:0 10px 30px rgba(0,0,0,.2);
-  position:relative;
-  animation:pop .4s ease;
-}
-
-@keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-
-.delete{
-  position:absolute;
-  top:6px;
-  right:8px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-img,video{
-  width:100%;
+.preview{
+  margin-top:10px;
+  max-width:120px;
   border-radius:10px;
 }
 </style>
@@ -96,127 +123,24 @@ img,video{
 
 <body>
 
-<div class="name3d">Elyas Saeedawi</div>
-
-<!-- Private Vault Form -->
-<div class="card vault">
-  <h2>Your Private Vault</h2>
-
-  <textarea id="note" placeholder="Write anything..."></textarea>
-  <button onclick="saveText()">Save Text</button>
-
-  <input type="file" id="file" multiple accept="image/*,video/*">
-  <button onclick="saveFile()">Save File</button>
-
-  <div class="items" id="items"></div>
+<div class="main">
+  Scroll Down ↓
 </div>
 
-<audio id="unlockSound">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav">
-</audio>
+<footer class="footer-section">
 
-<script>
-// Get elements
-const vaultBox = document.getElementById("vault");
-const itemsBox = document.getElementById("items");
-const sound = document.getElementById("unlockSound");
-
-// Save text function
-function saveText(){
-  const noteInput = document.getElementById("note").value;
-  if (!noteInput) return alert("Please enter some text");
-
-  // Get the existing data from localStorage, or start with an empty array
-  const data = JSON.parse(localStorage.getItem("vault") || "[]");
-  data.push({type: "text", content: noteInput});
-  localStorage.setItem("vault", JSON.stringify(data));
-
-  // Clear the text input and reload items
-  document.getElementById("note").value = "";
-  load();
-}
-
-// Save file function
-document.getElementById("file").onchange = () => {
-  const files = document.getElementById("file").files;
-  [...files].forEach(file => {
-    const pwd = prompt("Set password for this file");
-    if (!pwd) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = JSON.parse(localStorage.getItem("vault") || "[]");
-      data.push({type: file.type, src: reader.result, password: pwd});
-      localStorage.setItem("vault", JSON.stringify(data));
-      load();
-    }
-    reader.readAsDataURL(file);
-  });
-};
-
-// Load vault items
-function load(){
-  itemsBox.innerHTML = "";
-  const data = JSON.parse(localStorage.getItem("vault") || "[]");
-
-  // Loop through each item and display it
-  data.forEach((item, i) => {
-    const div = document.createElement("div");
-    div.className = "item";
-
-    if (item.type === "text") {
-      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><p>${item.content}</p>`;
-    } else {
-      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="unlock(${i})">🔒</div>`;
-    }
-    itemsBox.appendChild(div);
-  });
-}
-
-// Unlock a file
-function unlock(i){
-  const data = JSON.parse(localStorage.getItem("vault"));
-  const pwd = prompt("Enter password");
-
-  if (pwd !== data[i].password) return alert("Wrong password");
-
-  // Play unlock sound
-  sound.play();
-
-  // Replace locked content with the actual content
-  const div = document.createElement("div");
-  div.className = "item";
-  div.innerHTML = data[i].type.startsWith("video")
-    ? `<video controls src="${data[i].src}"></video>`
-    : `<img src="${data[i].src}">`;
-
-  itemsBox.replaceChild(div, itemsBox.children[i]);
-}
-
-// Delete an item from the vault
-function del(i){
-  if (!confirm("Are you sure you want to delete this item?")) return;
-
-  const data = JSON.parse(localStorage.getItem("vault"));
-  data.splice(i, 1);
-  localStorage.setItem("vault", JSON.stringify(data));
-  load();
-}
-
-// Load saved items on page load
-load();
-
-</script>
-
-</body>
-</html><footer class="footer-section">
   <div class="gooey">
-    <span></span><span></span><span></span>
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
 
-  <div class="footer-name">Elyas Saeedawi</div>
+  <div class="footer-name">
+    Elyas Saeedawi
+  </div>
 
   <div class="footer-content">
+
     <div>
       <h4>Company</h4>
       <a href="#">About</a>
@@ -232,7 +156,38 @@ load();
     <div>
       <h4>Upload Image</h4>
       <input type="file" id="imageUpload" accept="image/*">
-      <button onclick="saveImage()">Save Image</button>
+      <button onclick="saveImage()">Save</button>
+      <img id="preview" class="preview">
     </div>
+
   </div>
+
 </footer>
+
+<script>
+function saveImage(){
+  const input = document.getElementById("imageUpload");
+  const preview = document.getElementById("preview");
+
+  if(!input.files[0]) return;
+
+  const reader = new FileReader();
+  reader.onload = function(){
+    localStorage.setItem("savedImage", reader.result);
+    preview.src = reader.result;
+  }
+  reader.readAsDataURL(input.files[0]);
+}
+
+function load(){
+  const saved = localStorage.getItem("savedImage");
+  if(saved){
+    document.getElementById("preview").src = saved;
+  }
+}
+
+load();
+</script>
+
+</body>
+</html>
