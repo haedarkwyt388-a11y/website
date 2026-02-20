@@ -1,107 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>3D Glass Card</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+/* General Styles for Body and Layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f0f0f0;
+}
 
-    body {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f2f2f2;
-    }
+/* Header Styles */
+header {
+    text-align: center;
+    padding: 20px;
+    background-color: #2c3e50;
+    color: white;
+}
 
-    .parent {
-      width: 300px;
-      height: 320px;
-      perspective: 1000px;
-    }
+/* About Section Styles */
+#about {
+    padding: 20px;
+    background-color: #ecf0f1;
+}
 
-    .card {
-      width: 100%;
-      height: 100%;
-      border-radius: 40px;
-      background: linear-gradient(135deg, #00f2c3, #00c9ff);
-      transform-style: preserve-3d;
-      transition: 0.5s ease;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-      position: relative;
-    }
+/* Projects Section Styles */
+#projects {
+    padding: 20px;
+    background-color: #ffffff;
+}
 
-    .parent:hover .card {
-      transform: rotateY(15deg) rotateX(10deg);
-    }
+/* Contact Form Styles */
+#contact {
+    background-color: #f39c12;
+    padding: 20px;
+    color: white;
+}
 
-    .glass {
-      position: absolute;
-      inset: 10px;
-      border-radius: 35px;
-      background: rgba(255,255,255,0.25);
-      backdrop-filter: blur(10px);
-      transform: translateZ(30px);
-      border-left: 1px solid rgba(255,255,255,0.5);
-      border-bottom: 1px solid rgba(255,255,255,0.5);
-    }
+/* Form Input and Button Styles */
+input, button {
+    padding: 10px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+}
 
-    .content {
-      position: relative;
-      padding: 40px;
-      color: white;
-      transform: translateZ(50px);
-    }
+/* Button Styling */
+button {
+    background-color: #16a085;
+    color: white;
+    cursor: pointer;
+}
 
-    .content h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .content p {
-      font-size: 13px;
-      opacity: 0.9;
-    }
-
-    .icons {
-      margin-top: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .icon {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="parent">
-    <div class="card">
-      <div class="glass"></div>
-      <div class="content">
-        <h2>UIVERSE (3D UI)</h2>
-        <p>Create, share and use beautiful custom elements made with CSS</p>
-        <div class="icons">
-          <div class="icon">🌐</div>
-          <div class="icon">🐦</div>
-          <div class="icon">▶</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</body>
-</html>
+button:hover {
+    background-color: #1abc9c;
+}
