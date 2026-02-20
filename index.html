@@ -1,162 +1,191 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إلياس سعيدوي</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #f06, #4db8ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            perspective: 1000px; /* تأثير 3D */
-        }
+<meta charset="UTF-8">
+<title>3D Auth Pro</title>
 
-        .container {
-            text-align: center;
-            padding: 20px;
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transform-style: preserve-3d;
-            transition: transform 0.5s ease-in-out;
-        }
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Segoe UI,sans-serif;
+}
 
-        .header h1 {
-            font-size: 30px;
-            color: #333;
-        }
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#00ffcc,#7f00ff);
+    perspective:1500px;
+    overflow:hidden;
+}
 
-        .form-container input {
-            margin-bottom: 10px;
-            padding: 10px;
-            width: 80%;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            outline: none;
-        }
+.page{
+    width:350px;
+    padding:30px;
+    border-radius:30px;
+    background:rgba(0,0,0,0.35);
+    backdrop-filter:blur(14px);
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.7),
+        inset 0 0 30px rgba(255,255,255,.05);
+    transform-style:preserve-3d;
+    transition:all .8s ease;
+    position:absolute;
+}
 
-        .form-container button {
-            padding: 12px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+.hidden{
+    opacity:0;
+    pointer-events:none;
+    transform:rotateY(90deg) translateZ(-300px);
+}
 
-        .form-container button:hover {
-            background-color: #218838;
-        }
+h2{
+    text-align:center;
+    color:#00ffcc;
+    margin-bottom:20px;
+}
 
-        .welcome-container {
-            display: none;
-            text-align: center;
-            background: #fff;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            transform-style: preserve-3d;
-            transition: transform 0.5s ease-in-out;
-        }
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:12px;
+    border-radius:12px;
+    border:none;
+    outline:none;
+}
 
-        .welcome-container h1 {
-            font-size: 35px;
-            color: #333;
-        }
+button{
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:none;
+    background:linear-gradient(135deg,#00ff00,#00ffaa);
+    font-weight:bold;
+    cursor:pointer;
+}
 
-        .welcome-container p {
-            font-size: 20px;
-            color: #777;
-        }
+.switch{
+    margin-top:15px;
+    text-align:center;
+    color:white;
+    cursor:pointer;
+    font-size:14px;
+}
 
-        .welcome-container button {
-            padding: 12px 20px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    display:block;
+    margin:10px auto;
+    object-fit:cover;
+}
 
-        .welcome-container button:hover {
-            background-color: #c82333;
-        }
+.dashboard h1{
+    color:white;
+    text-align:center;
+}
 
-        /* تأثير الحركة 3D */
-        .container:hover {
-            transform: rotateY(15deg) rotateX(15deg);
-        }
-
-        .welcome-container:hover {
-            transform: rotateY(15deg) rotateX(15deg);
-        }
-
-    </style>
+.dashboard p{
+    color:#00ffcc;
+    text-align:center;
+}
+</style>
 </head>
+
 <body>
-    <!-- صفحة تسجيل الدخول -->
-    <div class="container" id="loginPage">
-        <div class="header">
-            <h1>إلياس سعيدوي</h1>
-            <p>تسجيل الدخول</p>
-        </div>
-        <div class="form-container">
-            <input type="text" id="username" placeholder="اسم المستخدم" required><br>
-            <input type="password" id="password" placeholder="كلمة المرور" required><br>
-            <button onclick="login()">دخول</button>
-        </div>
-    </div>
 
-    <!-- صفحة الترحيب بعد تسجيل الدخول -->
-    <div class="welcome-container" id="welcomePage">
-        <h1>مرحبًا بك، إلياس سعيدوي!</h1>
-        <p>تم تسجيل الدخول بنجاح!</p>
-        <button onclick="logout()">تسجيل الخروج</button>
-    </div>
+<div class="page" id="register">
+    <h2>Register</h2>
+    <input id="rUser" placeholder="Username">
+    <input id="rPass" type="number" placeholder="Password">
+    <input id="rEmail" placeholder="Email">
+    <input id="rImg" type="file" accept="image/*">
+    <button onclick="register()">Create</button>
+    <div class="switch" onclick="showLogin()">Login</div>
+</div>
 
-    <script>
-        // دالة تسجيل الدخول
-        function login() {
-            // الحصول على البيانات المدخلة
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            
-            // تحقق من صحة المدخلات
-            if (username === "Elyas" && password === "password123") {
-                // تخزين اسم المستخدم في localStorage
-                localStorage.setItem("username", username);
-                document.getElementById("loginPage").style.display = "none"; // إخفاء صفحة تسجيل الدخول
-                document.getElementById("welcomePage").style.display = "block"; // عرض صفحة الترحيب
-            } else {
-                alert("اسم المستخدم أو كلمة المرور غير صحيحة.");
-            }
-        }
+<div class="page hidden" id="login">
+    <h2>Login</h2>
+    <input id="lUser" placeholder="Username">
+    <input id="lPass" type="number" placeholder="Password">
+    <button onclick="login()">Enter</button>
+    <div class="switch" onclick="showRegister()">Register</div>
+</div>
 
-        // دالة لتسجيل الخروج
-        function logout() {
-            // إزالة اسم المستخدم من localStorage
-            localStorage.removeItem("username");
-            document.getElementById("welcomePage").style.display = "none"; // إخفاء صفحة الترحيب
-            document.getElementById("loginPage").style.display = "block"; // إظهار صفحة تسجيل الدخول
-        }
+<div class="page hidden dashboard" id="dash">
+    <img id="dImg">
+    <h1 id="dUser"></h1>
+    <p id="dEmail"></p>
+    <button onclick="logout()">Logout</button>
+</div>
 
-        // لو كان هناك اسم مستخدم مخزن في localStorage، يتم عرضه في صفحة الترحيب
-        window.onload = function() {
-            const username = localStorage.getItem("username");
-            if (username) {
-                document.getElementById("loginPage").style.display = "none";
-                document.getElementById("welcomePage").style.display = "block";
-                document.querySelector(".welcome-container h1").innerText = `مرحبًا بك، ${username}!`;
-            }
-        };
-    </script>
+<script>
+// Page switching
+function showLogin(){
+    register.classList.add("hidden");
+    login.classList.remove("hidden");
+}
+function showRegister(){
+    login.classList.add("hidden");
+    register.classList.remove("hidden");
+}
+
+// Register
+function register(){
+    const u=rUser.value,p=rPass.value,e=rEmail.value,f=rImg.files[0];
+    if(!u||!p||!e||!f)return alert("Fill all fields");
+
+    const r=new FileReader();
+    r.onload=()=>{
+        localStorage.setItem("user_"+u,JSON.stringify({
+            user:u,pass:p,email:e,img:r.result
+        }));
+        showLogin();
+    }
+    r.readAsDataURL(f);
+}
+
+// Login
+function login(){
+    const u=lUser.value,p=lPass.value;
+    const data=localStorage.getItem("user_"+u);
+    if(!data)return alert("User not found");
+    const d=JSON.parse(data);
+    if(d.pass!==p)return alert("Wrong password");
+
+    dUser.innerText=d.user;
+    dEmail.innerText=d.email;
+    dImg.src=d.img;
+
+    login.classList.add("hidden");
+    dash.classList.remove("hidden");
+}
+
+function logout(){
+    dash.classList.add("hidden");
+    login.classList.remove("hidden");
+}
+
+// 3D Mouse movement
+document.querySelectorAll('.page').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const x=e.clientX-r.left;
+        const y=e.clientY-r.top;
+        const cx=r.width/2;
+        const cy=r.height/2;
+        const rx=(y-cy)/20;
+        const ry=(x-cx)/20;
+        card.style.transform=`rotateX(${-rx}deg) rotateY(${ry}deg)`;
+    });
+    card.addEventListener('mouseleave',()=>{
+        card.style.transform='rotateX(0) rotateY(0)';
+    });
+});
+</script>
+
 </body>
-                </html>
+</html>
