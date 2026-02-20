@@ -3,126 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إلياس سعيدوي - الموقع الرسمي</title>
+    <title>إلياس سعيدوي</title>
     <style>
-        /* تصميم الجسم */
         body {
             margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, rgba(0, 0, 255, 0.6), rgba(255, 0, 255, 0.6));
-            font-family: 'Arial', sans-serif;
             height: 100vh;
+            background: linear-gradient(135deg, #f06, #4db8ff);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
             perspective: 1000px; /* تأثير 3D */
         }
 
-        /* الحاوية الرئيسية */
         .container {
             text-align: center;
-        }
-
-        /* الاسم */
-        .name {
-            font-size: 3em;
-            color: white;
-            margin-bottom: 50px;
-            text-transform: uppercase;
-            font-weight: bold;
-            transform-style: preserve-3d;
-            transition: transform 1s ease;
-        }
-
-        /* تأثيرات 3D عند تحريك الماوس */
-        .container:hover .name {
-            transform: rotateY(20deg) rotateX(10deg);
-        }
-
-        /* واجهة الدخول */
-        .login-container {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             transform-style: preserve-3d;
             transition: transform 0.5s ease-in-out;
         }
 
-        /* شكل عناصر النموذج */
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .header h1 {
+            font-size: 30px;
+            color: #333;
         }
 
-        /* حقول النص */
-        input[type="text"], input[type="password"] {
-            padding: 15px;
-            border-radius: 10px;
-            border: none;
-            font-size: 1em;
-            background-color: #ffffff;
+        .form-container input {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 80%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
             outline: none;
         }
 
-        /* زر تسجيل الدخول */
-        button {
-            padding: 15px;
-            border-radius: 10px;
-            border: none;
-            background-color: #00ff00;
+        .form-container button {
+            padding: 12px 20px;
+            background-color: #28a745;
             color: white;
-            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
         }
 
-        /* تأثير 3D عند تحريك الماوس */
-        .container:hover .login-container {
-            transform: rotateY(10deg) rotateX(-10deg);
+        .form-container button:hover {
+            background-color: #218838;
         }
+
+        .welcome-container {
+            display: none;
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .welcome-container h1 {
+            font-size: 35px;
+            color: #333;
+        }
+
+        .welcome-container p {
+            font-size: 20px;
+            color: #777;
+        }
+
+        .welcome-container button {
+            padding: 12px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .welcome-container button:hover {
+            background-color: #c82333;
+        }
+
+        /* تأثير الحركة 3D */
+        .container:hover {
+            transform: rotateY(15deg) rotateX(15deg);
+        }
+
+        .welcome-container:hover {
+            transform: rotateY(15deg) rotateX(15deg);
+        }
+
     </style>
 </head>
 <body>
-
-    <!-- الواجهة الرئيسية -->
-    <div class="container">
+    <!-- صفحة تسجيل الدخول -->
+    <div class="container" id="loginPage">
         <div class="header">
-            <h1 class="name">إلياس سعيدوي</h1>
+            <h1>إلياس سعيدوي</h1>
+            <p>تسجيل الدخول</p>
         </div>
-        
-        <!-- واجهة الدخول -->
-        <div class="login-container">
-            <form class="login-form">
-                <h2>تسجيل الدخول</h2>
-                <input type="text" placeholder="اسم المستخدم" required>
-                <input type="password" placeholder="كلمة المرور" required>
-                <button type="submit">دخول</button>
-            </form>
+        <div class="form-container">
+            <input type="text" id="username" placeholder="اسم المستخدم" required><br>
+            <input type="password" id="password" placeholder="كلمة المرور" required><br>
+            <button onclick="login()">دخول</button>
         </div>
     </div>
 
+    <!-- صفحة الترحيب بعد تسجيل الدخول -->
+    <div class="welcome-container" id="welcomePage">
+        <h1>مرحبًا بك، إلياس سعيدوي!</h1>
+        <p>تم تسجيل الدخول بنجاح!</p>
+        <button onclick="logout()">تسجيل الخروج</button>
+    </div>
+
     <script>
-        // إضافة تأثيرات حركة 3D عند تحريك الماوس
-        document.querySelector('.container').addEventListener('mousemove', (e) => {
-            const name = document.querySelector('.name');
-            const loginContainer = document.querySelector('.login-container');
+        // دالة تسجيل الدخول
+        function login() {
+            // الحصول على البيانات المدخلة
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
             
-            const x = e.clientX / window.innerWidth - 0.5;
-            const y = e.clientY / window.innerHeight - 0.5;
-            
-            // تحريك النص في الفضاء ثلاثي الأبعاد
-            name.style.transform = `rotateY(${x * 30}deg) rotateX(${y * 30}deg)`;
-            
-            // تحريك واجهة الدخول 3D
-            loginContainer.style.transform = `rotateY(${x * 10}deg) rotateX(${y * -10}deg)`;
-        });
+            // تحقق من صحة المدخلات
+            if (username === "Elyas" && password === "password123") {
+                // تخزين اسم المستخدم في localStorage
+                localStorage.setItem("username", username);
+                document.getElementById("loginPage").style.display = "none"; // إخفاء صفحة تسجيل الدخول
+                document.getElementById("welcomePage").style.display = "block"; // عرض صفحة الترحيب
+            } else {
+                alert("اسم المستخدم أو كلمة المرور غير صحيحة.");
+            }
+        }
 
-        document.querySelector('.container').addEventListener('mouseleave', () => {
-            document.querySelector('.name').style.transform = 'rotateY(0deg) rotateX(0deg)';
-            document.querySelector('.login-container').style.transform = 'rotateY(0deg) rotateX(0deg)';
-        });
+        // دالة لتسجيل الخروج
+        function logout() {
+            // إزالة اسم المستخدم من localStorage
+            localStorage.removeItem("username");
+            document.getElementById("welcomePage").style.display = "none"; // إخفاء صفحة الترحيب
+            document.getElementById("loginPage").style.display = "block"; // إظهار صفحة تسجيل الدخول
+        }
+
+        // لو كان هناك اسم مستخدم مخزن في localStorage، يتم عرضه في صفحة الترحيب
+        window.onload = function() {
+            const username = localStorage.getItem("username");
+            if (username) {
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("welcomePage").style.display = "block";
+                document.querySelector(".welcome-container h1").innerText = `مرحبًا بك، ${username}!`;
+            }
+        };
     </script>
-
 </body>
-</html>
+                </html>
