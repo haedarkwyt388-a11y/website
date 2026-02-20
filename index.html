@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Elyas Saeedawi Vault</title>
+<title>Private Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,11 +11,12 @@
 body{
   margin:0;
   min-height:100vh;
-  background:linear-gradient(135deg,#fff,#eaeaea);
+  background:linear-gradient(135deg,#FF00A6,#00D2FF);
   display:flex;
   justify-content:center;
   align-items:center;
   perspective:1200px;
+  overflow:hidden;
 }
 
 .name3d{
@@ -23,18 +24,19 @@ body{
   top:15px;
   right:20px;
   font-weight:bold;
+  font-size:24px;
+  color: #ffffff;
+  text-shadow: 2px 2px 5px #000000;
 }
 
 .card{
   width:360px;
   padding:25px;
   border-radius:25px;
-  background:rgba(255,255,255,.7);
-  backdrop-filter:blur(10px);
-  box-shadow:0 30px 80px rgba(0,0,0,.25);
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(8px);
+  box-shadow:0 30px 80px rgba(0,0,0,.3);
 }
-
-.hidden{display:none}
 
 input,textarea,button{
   width:100%;
@@ -42,10 +44,11 @@ input,textarea,button{
   margin:8px 0;
   border:none;
   border-radius:12px;
+  background-color: #fff;
 }
 
 button{
-  background:#000;
+  background:#00B5E2;
   color:#fff;
   font-weight:bold;
   cursor:pointer;
@@ -63,7 +66,7 @@ button{
 }
 
 .item{
-  background:#fff;
+  background:#ffffff;
   padding:10px;
   border-radius:15px;
   box-shadow:0 10px 30px rgba(0,0,0,.2);
@@ -114,6 +117,7 @@ img,video{
   <button onclick="saveText()">Save Text</button>
 
   <input type="file" id="file" multiple accept="image/*,video/*">
+  <button onclick="saveFile()">Save File</button>
 
   <div class="items" id="items"></div>
 </div>
@@ -131,6 +135,7 @@ const sound = document.getElementById("unlockSound");
 function login(){
   if(!user.value || !pass.value) return alert("Fill fields");
   localStorage.setItem("user",user.value);
+  localStorage.setItem("pass",pass.value);
   loginBox.classList.add("hidden");
   vaultBox.classList.remove("hidden");
   load();
@@ -147,7 +152,7 @@ function saveText(){
 
 file.onchange=()=>{
   [...file.files].forEach(f=>{
-    const pwd=prompt("Set password");
+    const pwd=prompt("Set password for this file");
     if(!pwd) return;
     const r=new FileReader();
     r.onload=()=>{
@@ -158,6 +163,22 @@ file.onchange=()=>{
     }
     r.readAsDataURL(f);
   });
+}
+
+function saveFile(){
+  const fileInput = document.getElementById('file');
+  const file = fileInput.files[0];
+  if (!file) return;
+  const pwd = prompt("Set password for this file");
+  if (!pwd) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const data = JSON.parse(localStorage.getItem("vault") || "[]");
+    data.push({ type: file.type, src: reader.result, password: pwd });
+    localStorage.setItem("vault", JSON.stringify(data));
+    load();
+  };
+  reader.readAsDataURL(file);
 }
 
 function load(){
