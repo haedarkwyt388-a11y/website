@@ -1,52 +1,128 @@
-/* General Styles for Body and Layout */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-color: #f0f0f0;
-}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إلياس سعيدوي - الموقع الرسمي</title>
+    <style>
+        /* تصميم الجسم */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 255, 0.6), rgba(255, 0, 255, 0.6));
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px; /* تأثير 3D */
+        }
 
-/* Header Styles */
-header {
-    text-align: center;
-    padding: 20px;
-    background-color: #2c3e50;
-    color: white;
-}
+        /* الحاوية الرئيسية */
+        .container {
+            text-align: center;
+        }
 
-/* About Section Styles */
-#about {
-    padding: 20px;
-    background-color: #ecf0f1;
-}
+        /* الاسم */
+        .name {
+            font-size: 3em;
+            color: white;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+        }
 
-/* Projects Section Styles */
-#projects {
-    padding: 20px;
-    background-color: #ffffff;
-}
+        /* تأثيرات 3D عند تحريك الماوس */
+        .container:hover .name {
+            transform: rotateY(20deg) rotateX(10deg);
+        }
 
-/* Contact Form Styles */
-#contact {
-    background-color: #f39c12;
-    padding: 20px;
-    color: white;
-}
+        /* واجهة الدخول */
+        .login-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+        }
 
-/* Form Input and Button Styles */
-input, button {
-    padding: 10px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-}
+        /* شكل عناصر النموذج */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-/* Button Styling */
-button {
-    background-color: #16a085;
-    color: white;
-    cursor: pointer;
-}
+        /* حقول النص */
+        input[type="text"], input[type="password"] {
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+            background-color: #ffffff;
+            outline: none;
+        }
 
-button:hover {
-    background-color: #1abc9c;
-}
+        /* زر تسجيل الدخول */
+        button {
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background-color: #00ff00;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        /* تأثير 3D عند تحريك الماوس */
+        .container:hover .login-container {
+            transform: rotateY(10deg) rotateX(-10deg);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الواجهة الرئيسية -->
+    <div class="container">
+        <div class="header">
+            <h1 class="name">إلياس سعيدوي</h1>
+        </div>
+        
+        <!-- واجهة الدخول -->
+        <div class="login-container">
+            <form class="login-form">
+                <h2>تسجيل الدخول</h2>
+                <input type="text" placeholder="اسم المستخدم" required>
+                <input type="password" placeholder="كلمة المرور" required>
+                <button type="submit">دخول</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // إضافة تأثيرات حركة 3D عند تحريك الماوس
+        document.querySelector('.container').addEventListener('mousemove', (e) => {
+            const name = document.querySelector('.name');
+            const loginContainer = document.querySelector('.login-container');
+            
+            const x = e.clientX / window.innerWidth - 0.5;
+            const y = e.clientY / window.innerHeight - 0.5;
+            
+            // تحريك النص في الفضاء ثلاثي الأبعاد
+            name.style.transform = `rotateY(${x * 30}deg) rotateX(${y * 30}deg)`;
+            
+            // تحريك واجهة الدخول 3D
+            loginContainer.style.transform = `rotateY(${x * 10}deg) rotateX(${y * -10}deg)`;
+        });
+
+        document.querySelector('.container').addEventListener('mouseleave', () => {
+            document.querySelector('.name').style.transform = 'rotateY(0deg) rotateX(0deg)';
+            document.querySelector('.login-container').style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
+    </script>
+
+</body>
+</html>
