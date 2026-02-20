@@ -2,210 +2,212 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Your Private Vault</title>
+<title>Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{box-sizing:border-box;font-family:Arial}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Poppins,sans-serif;
+}
 
 body{
-  margin:0;
-  min-height:100vh;
-  background:linear-gradient(135deg,#FF00A6,#00D2FF);
+  background:#000;
+  color:white;
+}
+
+/* HEADER */
+.header{
+  height:60px;
   display:flex;
-  justify-content:center;
   align-items:center;
-  perspective:1200px;
-  overflow:hidden;
+  justify-content:space-between;
+  padding:0 15px;
+  border-bottom:1px solid #222;
 }
 
-.name3d{
-  position:fixed;
-  top:15px;
-  right:20px;
-  font-weight:bold;
-  font-size:24px;
-  color: #ffffff;
-  text-shadow: 2px 2px 5px #000000;
+.header h2{
+  font-size:20px;
+  background:linear-gradient(90deg,#a855f7,#22d3ee);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
-.card{
-  width:360px;
-  padding:25px;
-  border-radius:25px;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(8px);
-  box-shadow:0 30px 80px rgba(0,0,0,.3);
-}
-
-input,textarea,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
+.header button{
+  background:none;
   border:none;
-  border-radius:12px;
-  background-color: #fff;
-}
-
-button{
-  background:#00B5E2;
-  color:#fff;
-  font-weight:bold;
+  color:#ef4444;
+  font-size:14px;
   cursor:pointer;
 }
 
-.vault{
-  width:95%;
-  max-width:700px;
-}
-
-.items{
+/* GRID */
+.grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:15px;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
 }
 
 .item{
-  background:#ffffff;
-  padding:10px;
-  border-radius:15px;
-  box-shadow:0 10px 30px rgba(0,0,0,.2);
   position:relative;
-  animation:pop .4s ease;
+  background:#111;
+  aspect-ratio:1/1;
+  overflow:hidden;
 }
 
-@keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-
-.delete{
-  position:absolute;
-  top:6px;
-  right:8px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-img,video{
+.item img,
+.item video{
   width:100%;
-  border-radius:10px;
+  height:100%;
+  object-fit:cover;
+}
+
+/* LOCK */
+.locked{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  cursor:pointer;
+}
+
+/* ICONS */
+.icons{
+  position:absolute;
+  bottom:5px;
+  right:5px;
+  display:flex;
+  gap:5px;
+}
+
+.icons div{
+  background:rgba(0,0,0,.6);
+  padding:4px 6px;
+  border-radius:6px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+/* ADD BUTTON */
+.add{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#8b5cf6,#22d3ee);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  color:black;
+  cursor:pointer;
+  box-shadow:0 0 25px rgba(139,92,246,.8);
+}
+
+/* INPUT */
+#file{
+  display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="name3d">Elyas Saeedawi</div>
-
-<!-- Private Vault Form -->
-<div class="card vault">
-  <h2>Your Private Vault</h2>
-
-  <textarea id="note" placeholder="Write anything..."></textarea>
-  <button onclick="saveText()">Save Text</button>
-
-  <input type="file" id="file" multiple accept="image/*,video/*">
-  <button onclick="saveFile()">Save File</button>
-
-  <div class="items" id="items"></div>
+<div class="header">
+  <h2>Elyas Vault</h2>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<audio id="unlockSound">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav">
-</audio>
+<div class="grid" id="grid"></div>
+
+<div class="add" onclick="file.click()">+</div>
+<input type="file" id="file" accept="image/*,video/*" onchange="addFile()">
 
 <script>
-// Get elements
-const vaultBox = document.getElementById("vault");
-const itemsBox = document.getElementById("items");
-const sound = document.getElementById("unlockSound");
+const grid = document.getElementById("grid");
+const file = document.getElementById("file");
 
-// Save text function
-function saveText(){
-  const noteInput = document.getElementById("note").value;
-  if (!noteInput) return alert("Please enter some text");
-
-  // Get the existing data from localStorage, or start with an empty array
-  const data = JSON.parse(localStorage.getItem("vault") || "[]");
-  data.push({type: "text", content: noteInput});
-  localStorage.setItem("vault", JSON.stringify(data));
-
-  // Clear the text input and reload items
-  document.getElementById("note").value = "";
-  load();
-}
-
-// Save file function
-document.getElementById("file").onchange = () => {
-  const files = document.getElementById("file").files;
-  [...files].forEach(file => {
-    const pwd = prompt("Set password for this file");
-    if (!pwd) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = JSON.parse(localStorage.getItem("vault") || "[]");
-      data.push({type: file.type, src: reader.result, password: pwd});
-      localStorage.setItem("vault", JSON.stringify(data));
-      load();
-    }
-    reader.readAsDataURL(file);
-  });
-};
-
-// Load vault items
 function load(){
-  itemsBox.innerHTML = "";
-  const data = JSON.parse(localStorage.getItem("vault") || "[]");
-
-  // Loop through each item and display it
-  data.forEach((item, i) => {
+  grid.innerHTML="";
+  const data = JSON.parse(localStorage.getItem("vault")) || [];
+  data.forEach((item,i)=>{
     const div = document.createElement("div");
-    div.className = "item";
+    div.className="item";
 
-    if (item.type === "text") {
-      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><p>${item.content}</p>`;
-    } else {
-      div.innerHTML = `<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="unlock(${i})">🔒</div>`;
+    if(item.locked){
+      div.innerHTML=`<div class="locked" onclick="unlock(${i})">🔒</div>`;
+    }else{
+      div.innerHTML = item.type.startsWith("video")
+        ? `<video src="${item.src}" muted></video>`
+        : `<img src="${item.src}">`;
     }
-    itemsBox.appendChild(div);
+
+    div.innerHTML += `
+      <div class="icons">
+        <div onclick="lock(${i})">🔒</div>
+        <div onclick="del(${i})">❌</div>
+      </div>`;
+    grid.appendChild(div);
   });
 }
 
-// Unlock a file
-function unlock(i){
-  const data = JSON.parse(localStorage.getItem("vault"));
-  const pwd = prompt("Enter password");
+function addFile(){
+  const f = file.files[0];
+  if(!f) return;
 
-  if (pwd !== data[i].password) return alert("Wrong password");
-
-  // Play unlock sound
-  sound.play();
-
-  // Replace locked content with the actual content
-  const div = document.createElement("div");
-  div.className = "item";
-  div.innerHTML = data[i].type.startsWith("video")
-    ? `<video controls src="${data[i].src}"></video>`
-    : `<img src="${data[i].src}">`;
-
-  itemsBox.replaceChild(div, itemsBox.children[i]);
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const data = JSON.parse(localStorage.getItem("vault")) || [];
+    data.push({
+      src: reader.result,
+      type: f.type,
+      locked: false,
+      password: null
+    });
+    localStorage.setItem("vault",JSON.stringify(data));
+    load();
+  };
+  reader.readAsDataURL(f);
 }
 
-// Delete an item from the vault
-function del(i){
-  if (!confirm("Are you sure you want to delete this item?")) return;
-
+function lock(i){
+  const pwd = prompt("Set password");
+  if(!pwd) return;
   const data = JSON.parse(localStorage.getItem("vault"));
-  data.splice(i, 1);
-  localStorage.setItem("vault", JSON.stringify(data));
+  data[i].locked = true;
+  data[i].password = pwd;
+  localStorage.setItem("vault",JSON.stringify(data));
   load();
 }
 
-// Load saved items on page load
-load();
+function unlock(i){
+  const pwd = prompt("Enter password");
+  const data = JSON.parse(localStorage.getItem("vault"));
+  if(pwd !== data[i].password) return alert("Wrong password");
+  data[i].locked = false;
+  data[i].password = null;
+  localStorage.setItem("vault",JSON.stringify(data));
+  load();
+}
 
+function del(i){
+  if(!confirm("Delete this item?")) return;
+  const data = JSON.parse(localStorage.getItem("vault"));
+  data.splice(i,1);
+  localStorage.setItem("vault",JSON.stringify(data));
+  load();
+}
+
+function logout(){
+  window.location.href="index.html";
+}
+
+load();
 </script>
 
 </body>
