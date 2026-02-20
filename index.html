@@ -1,192 +1,42 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Website</title>
-
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Arial, sans-serif;
+= `<div class="delete" onclick="del(${i})">❌</div><div class="lock" onclick="unlock(${i})">🔒</div>`;
+    }
+    itemsBox.appendChild(div);
+  });
 }
 
-body{
-  background:#0f0f1a;
-  min-height:100vh;
-  color:white;
+// Unlock a file
+function unlock(i){
+  const data = JSON.parse(localStorage.getItem("vault"));
+  const pwd = prompt("Enter password");
+
+  if (pwd !== data[i].password) return alert("Wrong password");
+
+  // Play unlock sound
+  sound.play();
+
+  // Replace locked content with the actual content
+  const div = document.createElement("div");
+  div.className = "item";
+  div.innerHTML = data[i].type.startsWith("video")
+    ? `<video controls src="${data[i].src}"></video>`
+    : `<img src="${data[i].src}">`;
+
+  itemsBox.replaceChild(div, itemsBox.children[i]);
 }
 
-/* محتوى تجريبي */
-.main{
-  min-height:150vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  opacity:0.3;
+// Delete an item from the vault
+function del(i){
+  if (!confirm("Are you sure you want to delete this item?")) return;
+
+  const data = JSON.parse(localStorage.getItem("vault"));
+  data.splice(i, 1);
+  localStorage.setItem("vault", JSON.stringify(data));
+  load();
 }
 
-/* ===== Footer ===== */
-.footer-section{
-  position:relative;
-  background:linear-gradient(135deg,#7f00ff,#e100ff);
-  overflow:hidden;
-  padding-top:120px;
-}
-
-/* gooey animation */
-.gooey{
-  position:absolute;
-  top:-80px;
-  width:100%;
-  height:160px;
-  filter: blur(20px);
-}
-
-.gooey span{
-  position:absolute;
-  width:200px;
-  height:200px;
-  background:#ff7adf;
-  border-radius:50%;
-  animation: float 6s infinite ease-in-out;
-}
-
-.gooey span:nth-child(1){ left:10%; animation-delay:0s;}
-.gooey span:nth-child(2){ left:40%; animation-delay:2s;}
-.gooey span:nth-child(3){ left:70%; animation-delay:4s;}
-
-@keyframes float{
-  0%{ transform:translateY(0);}
-  50%{ transform:translateY(40px);}
-  100%{ transform:translateY(0);}
-}
-
-/* محتوى الفوتر */
-.footer-name{
-  text-align:center;
-  font-size:26px;
-  font-weight:bold;
-  margin-bottom:30px;
-}
-
-.footer-content{
-  display:flex;
-  justify-content:space-around;
-  flex-wrap:wrap;
-  gap:30px;
-  padding:0 20px 40px;
-}
-
-.footer-content h4{
-  margin-bottom:10px;
-}
-
-.footer-content a{
-  display:block;
-  color:#fff;
-  text-decoration:none;
-  margin-bottom:6px;
-  opacity:0.85;
-}
-
-.footer-content a:hover{
-  opacity:1;
-}
-
-input[type="file"]{
-  margin-top:10px;
-  color:white;
-}
-
-button{
-  margin-top:10px;
-  padding:6px 14px;
-  border:none;
-  border-radius:6px;
-  background:#fff;
-  color:#7f00ff;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.preview{
-  margin-top:10px;
-  max-width:120px;
-  border-radius:10px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="main">
-  Scroll Down ↓
-</div>
-
-<footer class="footer-section">
-
-  <div class="gooey">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-
-  <div class="footer-name">
-    Elyas Saeedawi
-  </div>
-
-  <div class="footer-content">
-
-    <div>
-      <h4>Company</h4>
-      <a href="#">About</a>
-      <a href="#">Brand</a>
-    </div>
-
-    <div>
-      <h4>Resources</h4>
-      <a href="#">Privacy</a>
-      <a href="#">Terms</a>
-    </div>
-
-    <div>
-      <h4>Upload Image</h4>
-      <input type="file" id="imageUpload" accept="image/*">
-      <button onclick="saveImage()">Save</button>
-      <img id="preview" class="preview">
-    </div>
-
-  </div>
-
-</footer>
-
-<script>
-function saveImage(){
-  const input = document.getElementById("imageUpload");
-  const preview = document.getElementById("preview");
-
-  if(!input.files[0]) return;
-
-  const reader = new FileReader();
-  reader.onload = function(){
-    localStorage.setItem("savedImage", reader.result);
-    preview.src = reader.result;
-  }
-  reader.readAsDataURL(input.files[0]);
-}
-
-function load(){
-  const saved = localStorage.getItem("savedImage");
-  if(saved){
-    document.getElementById("preview").src = saved;
-  }
-}
-
+// Load saved items on page load
 load();
+
 </script>
 
 </body>
