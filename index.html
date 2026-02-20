@@ -2,166 +2,171 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Real Login Vault</title>
+<title>Digital Identity Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+*{box-sizing:border-box;font-family:Arial}
+
 body{
     margin:0;
-    font-family:Arial;
-    background:linear-gradient(135deg,#00ff88,#001a0f);
+    height:100vh;
+    background:radial-gradient(circle at top,#00ff88,#020202);
     display:flex;
     justify-content:center;
     align-items:center;
-    min-height:100vh;
+    perspective:1200px;
+    overflow:hidden;
+    color:white;
 }
 
+/* اسمك */
+.creator{
+    position:fixed;
+    top:20px;
+    right:30px;
+    font-weight:bold;
+    color:#00ff88;
+    text-shadow:0 0 20px #00ff88;
+    animation:float 3s ease-in-out infinite;
+}
+@keyframes float{
+    50%{transform:rotateY(25deg) translateZ(30px)}
+}
+
+/* الصفحات */
+.page{
+    position:absolute;
+    transition:.8s ease;
+    transform-style:preserve-3d;
+}
+.hidden{
+    opacity:0;
+    pointer-events:none;
+    transform:scale(.8) rotateY(60deg);
+}
+
+/* الكارد */
 .card{
-    width:350px;
-    padding:25px;
+    width:380px;
+    padding:35px;
+    border-radius:30px;
     background:rgba(255,255,255,.12);
-    backdrop-filter:blur(8px);
-    border-radius:20px;
-    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    backdrop-filter:blur(12px);
+    box-shadow:0 50px 120px rgba(0,0,0,.9);
+    transform-style:preserve-3d;
+    transition:.15s ease;
 }
 
-input,button{
-    width:100%;
-    padding:10px;
-    margin:8px 0;
-    border:none;
-    border-radius:8px;
+/* عناوين */
+h1{
+    margin:0;
+    color:#00ff88;
+    text-align:center;
+    transform:translateZ(40px);
+}
+p{
+    text-align:center;
+    opacity:.8;
+    margin:15px 0 25px;
+    transform:translateZ(30px);
 }
 
+/* زر */
 button{
-    background:#00ff88;
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:20px;
+    background:linear-gradient(135deg,#00ff88,#00ccff);
+    font-size:16px;
     font-weight:bold;
     cursor:pointer;
+    transform:translateZ(30px);
+    box-shadow:0 0 30px rgba(0,255,136,.7);
 }
 
-.hidden{display:none}
-
-.gallery{
-    width:90%;
-    max-width:900px;
-}
-
-.items{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-    gap:10px;
-}
-
-.item{
-    background:rgba(255,255,255,.15);
-    padding:8px;
-    border-radius:10px;
-    text-align:center;
-}
-
-img{
+/* صفحة Vault */
+textarea{
     width:100%;
-    border-radius:8px;
-}
-.logout{
-    background:red;
+    height:120px;
+    border:none;
+    border-radius:15px;
+    padding:12px;
+    resize:none;
+    background:rgba(0,0,0,.4);
     color:white;
+}
+.data{
+    margin-top:15px;
+    padding:12px;
+    border-radius:15px;
+    background:rgba(255,255,255,.08);
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div class="card" id="loginBox">
-    <h2>Login / Register</h2>
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Enter</button>
+<div class="creator">Created by Elyas Saeedawi</div>
+
+<!-- الصفحة الأولى -->
+<div class="page" id="home">
+    <div class="card">
+        <h1>Digital Identity Vault</h1>
+        <p>Your private digital space<br>secured in style</p>
+        <button onclick="enterVault()">Enter Vault</button>
+    </div>
 </div>
 
-<!-- VAULT -->
-<div class="card gallery hidden" id="vaultBox">
-    <h2 id="welcome"></h2>
-    <input type="file" id="upload" accept="image/*" multiple>
-    <div class="items" id="items"></div>
-    <button class="logout" onclick="logout()">Logout</button>
+<!-- الصفحة الثانية -->
+<div class="page hidden" id="vault">
+    <div class="card">
+        <h1>Your Vault</h1>
+        <p>Store anything privately</p>
+
+        <textarea id="input" placeholder="Write anything..."></textarea>
+        <button onclick="saveData()">Save</button>
+
+        <div class="data" id="output"></div>
+    </div>
 </div>
 
 <script>
-const loginBox = document.getElementById("loginBox");
-const vaultBox = document.getElementById("vaultBox");
-const itemsBox = document.getElementById("items");
-const welcome = document.getElementById("welcome");
+const home = document.getElementById("home");
+const vault = document.getElementById("vault");
+const cards = document.querySelectorAll(".card");
 
-function login(){
-    const u = username.value.trim();
-    const p = password.value.trim();
-    if(!u || !p){ alert("Fill fields"); return; }
-
-    let users = JSON.parse(localStorage.getItem("users")||"{}");
-
-    // إذا المستخدم جديد نسجله
-    if(!users[u]){
-        users[u] = { password:p, files:[] };
-    }else{
-        if(users[u].password !== p){
-            alert("Wrong password");
-            return;
-        }
-    }
-
-    localStorage.setItem("users",JSON.stringify(users));
-    localStorage.setItem("currentUser",u);
-
-    showVault();
-}
-
-function showVault(){
-    const user = localStorage.getItem("currentUser");
-    if(!user) return;
-
-    loginBox.classList.add("hidden");
-    vaultBox.classList.remove("hidden");
-    welcome.innerText = "Welcome " + user;
-    loadFiles();
-}
-
-function loadFiles(){
-    itemsBox.innerHTML="";
-    const users = JSON.parse(localStorage.getItem("users"));
-    const user = localStorage.getItem("currentUser");
-
-    users[user].files.forEach(src=>{
-        const div = document.createElement("div");
-        div.className="item";
-        div.innerHTML=`<img src="${src}">`;
-        itemsBox.appendChild(div);
+/* حركة ماوس 3D */
+document.addEventListener("mousemove", e=>{
+    const x = (window.innerWidth/2 - e.clientX)/25;
+    const y = (window.innerHeight/2 - e.clientY)/25;
+    cards.forEach(c=>{
+        c.style.transform = `rotateY(${x}deg) rotateX(${y}deg) scale(1.05)`;
     });
+});
+
+/* دخول */
+function enterVault(){
+    home.classList.add("hidden");
+    setTimeout(()=>{
+        vault.classList.remove("hidden");
+        loadData();
+    },400);
 }
 
-upload.onchange = ()=>{
-    const users = JSON.parse(localStorage.getItem("users"));
-    const user = localStorage.getItem("currentUser");
-
-    [...upload.files].forEach(file=>{
-        const r = new FileReader();
-        r.onload = ()=>{
-            users[user].files.push(r.result);
-            localStorage.setItem("users",JSON.stringify(users));
-            loadFiles();
-        }
-        r.readAsDataURL(file);
-    });
-};
-
-function logout(){
-    localStorage.removeItem("currentUser");
-    location.reload();
+/* تخزين */
+function saveData(){
+    const val = input.value.trim();
+    if(!val) return;
+    localStorage.setItem("vaultData", val);
+    loadData();
 }
 
-if(localStorage.getItem("currentUser")){
-    showVault();
+/* تحميل */
+function loadData(){
+    const data = localStorage.getItem("vaultData");
+    output.innerText = data ? "Saved:\n" + data : "No data saved yet";
 }
 </script>
 
