@@ -1,39 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My First Site</title>
-<style>
-body {
-  margin: 0;
-  height: 100vh;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Arial, sans-serif;
-}
+  <meta charset="UTF-8">
+  <title>3D Glass Card</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-.card {
-  width: 300px;
-  height: 380px;
-  border-radius: 30px;
-  background: linear-gradient(135deg, #00ffb3, #00cfff);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 24px;
-  font-weight: bold;
-}
-</style>
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f2;
+    }
+
+    .parent {
+      width: 300px;
+      height: 320px;
+      perspective: 1000px;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      background: linear-gradient(135deg, #00f2c3, #00c9ff);
+      transform-style: preserve-3d;
+      transition: 0.5s ease;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .parent:hover .card {
+      transform: rotateY(15deg) rotateX(10deg);
+    }
+
+    .glass {
+      position: absolute;
+      inset: 10px;
+      border-radius: 35px;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(10px);
+      transform: translateZ(30px);
+      border-left: 1px solid rgba(255,255,255,0.5);
+      border-bottom: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .content {
+      position: relative;
+      padding: 40px;
+      color: white;
+      transform: translateZ(50px);
+    }
+
+    .content h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .content p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .icons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
-  Hello World 🚀
-</div>
+  <div class="parent">
+    <div class="card">
+      <div class="glass"></div>
+      <div class="content">
+        <h2>UIVERSE (3D UI)</h2>
+        <p>Create, share and use beautiful custom elements made with CSS</p>
+        <div class="icons">
+          <div class="icon">🌐</div>
+          <div class="icon">🐦</div>
+          <div class="icon">▶</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
