@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Your Private Vault</title>
+<title>Elyas Vault</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,33 +11,32 @@
 body{
   margin:0;
   min-height:100vh;
-  background:linear-gradient(135deg,#FF00A6,#00D2FF);
+  background:linear-gradient(135deg,#8E2DE2,#4A00E0);
   display:flex;
   justify-content:center;
-  align-items:center;
-  overflow:hidden;
+  align-items:flex-start;
+  padding-top:80px;
+  color:#fff;
 }
 
-.name3d{
+.header{
   position:fixed;
-  top:15px;
-  right:20px;
-  font-weight:bold;
+  top:20px;
+  left:20px;
   font-size:24px;
-  color:#fff;
-  text-shadow:2px 2px 6px #000;
+  font-weight:bold;
 }
 
 .card{
-  width:360px;
-  padding:25px;
+  width:95%;
+  max-width:720px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(12px);
   border-radius:25px;
-  background:rgba(255,255,255,.9);
-  backdrop-filter:blur(10px);
-  box-shadow:0 30px 80px rgba(0,0,0,.3);
+  padding:20px;
 }
 
-input,textarea,button{
+textarea,input,button{
   width:100%;
   padding:12px;
   margin:8px 0;
@@ -46,25 +45,26 @@ input,textarea,button{
 }
 
 button{
-  background:#00B5E2;
-  color:#fff;
+  background:#00D2FF;
+  color:#000;
   font-weight:bold;
   cursor:pointer;
 }
 
 .items{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
   gap:15px;
+  margin-top:15px;
 }
 
 .item{
   background:#fff;
-  padding:10px;
+  color:#000;
   border-radius:15px;
-  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  padding:8px;
   position:relative;
-  animation:pop .4s ease;
+  animation:pop .3s ease;
 }
 
 @keyframes pop{
@@ -72,21 +72,7 @@ button{
   to{transform:scale(1);opacity:1}
 }
 
-.delete{
-  position:absolute;
-  top:6px;
-  right:8px;
-  cursor:pointer;
-}
-
-.lock{
-  position:absolute;
-  top:6px;
-  left:8px;
-  cursor:pointer;
-}
-
-img,video{
+.item img,.item video{
   width:100%;
   border-radius:10px;
   cursor:pointer;
@@ -94,161 +80,136 @@ img,video{
 
 .label{
   text-align:center;
-  margin-top:6px;
   font-size:13px;
-  font-weight:bold;
+  margin-top:5px;
   color:#555;
 }
 
-/* ===== IMAGE MODAL ===== */
-.modal{
+.delete{
+  position:absolute;
+  top:5px;
+  right:8px;
+  cursor:pointer;
+}
+
+.lock{
+  text-align:center;
+  font-size:30px;
+  cursor:pointer;
+  margin:20px 0;
+}
+
+/* Image Viewer */
+.viewer{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,.8);
   display:none;
   justify-content:center;
   align-items:center;
   z-index:999;
 }
-
-.modal img{
+.viewer img{
   max-width:90%;
   max-height:90%;
-  border-radius:20px;
-  animation:zoom .3s ease;
-}
-
-@keyframes zoom{
-  from{transform:scale(.6)}
-  to{transform:scale(1)}
+  border-radius:15px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="name3d">Elyas Saeedawi</div>
+<div class="header">Elyas Vault</div>
 
 <div class="card">
-  <h2>Your Private Vault</h2>
-
-  <textarea id="note" placeholder="Write anything..."></textarea>
+  <textarea id="note" placeholder="Write text..."></textarea>
   <button onclick="saveText()">Save Text</button>
 
   <input type="file" id="file" multiple accept="image/*,video/*">
-  <button onclick="saveFile()">Save File</button>
 
   <div class="items" id="items"></div>
 </div>
 
-<!-- IMAGE MODAL -->
-<div class="modal" id="modal" onclick="closeModal()">
-  <img id="modalImg">
+<div class="viewer" id="viewer" onclick="this.style.display='none'">
+  <img id="viewerImg">
 </div>
 
-<audio id="unlockSound">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav">
-</audio>
-
 <script>
-const itemsBox = document.getElementById("items");
-const sound = document.getElementById("unlockSound");
+const itemsBox=document.getElementById("items");
 
-// SAVE TEXT
+/* Save Text */
 function saveText(){
-  const note = document.getElementById("note").value;
-  if(!note) return alert("Write something");
-  const data = JSON.parse(localStorage.getItem("vault") || "[]");
-  data.push({type:"text",content:note});
+  const txt=note.value.trim();
+  if(!txt)return alert("Empty text");
+  const data=JSON.parse(localStorage.getItem("vault")||"[]");
+  data.push({type:"text",content:txt});
   localStorage.setItem("vault",JSON.stringify(data));
-  document.getElementById("note").value="";
+  note.value="";
   load();
 }
 
-// SAVE FILE
-document.getElementById("file").onchange = ()=>{
+/* Save Files */
+file.onchange=()=>{
   [...file.files].forEach(f=>{
-    const pwd = prompt("Set password");
-    if(!pwd) return;
-    const r = new FileReader();
-    r.onload = ()=>{
-      const data = JSON.parse(localStorage.getItem("vault")||"[]");
+    const pwd=prompt("Set password");
+    if(!pwd)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const data=JSON.parse(localStorage.getItem("vault")||"[]");
       data.push({type:f.type,src:r.result,password:pwd});
       localStorage.setItem("vault",JSON.stringify(data));
       load();
-    }
+    };
     r.readAsDataURL(f);
   });
-}
+};
 
-// LOAD ITEMS
+/* Load Vault */
 function load(){
   itemsBox.innerHTML="";
-  const data = JSON.parse(localStorage.getItem("vault")||"[]");
-
-  data.forEach((item,i)=>{
+  const data=JSON.parse(localStorage.getItem("vault")||"[]");
+  data.forEach((it,i)=>{
     const d=document.createElement("div");
     d.className="item";
 
-    if(item.type==="text"){
-      d.innerHTML=`
-        <div class="delete" onclick="del(${i})">❌</div>
-        <p>${item.content}</p>
-        <div class="label">Text</div>
-      `;
+    if(it.type==="text"){
+      d.innerHTML=`<div class="delete" onclick="del(${i})">❌</div>
+      <p>${it.content}</p>`;
     }else{
-      const label=item.type.startsWith("video")?"Video":"Image";
-      d.innerHTML=`
-        <div class="delete" onclick="del(${i})">❌</div>
-        <div class="lock" onclick="unlock(${i})">🔒</div>
-        <div class="label">${label}</div>
-      `;
+      d.innerHTML=`<div class="delete" onclick="del(${i})">❌</div>
+      <div class="lock" onclick="unlock(${i})">🔒</div>
+      <div class="label">${it.type.startsWith("video")?"Video":"Image"}</div>`;
     }
     itemsBox.appendChild(d);
   });
 }
 
-// UNLOCK
+/* Unlock */
 function unlock(i){
   const data=JSON.parse(localStorage.getItem("vault"));
   const pwd=prompt("Enter password");
-  if(pwd!==data[i].password) return alert("Wrong password");
-  sound.play();
+  if(pwd!==data[i].password)return alert("Wrong password");
 
-  const isVideo=data[i].type.startsWith("video");
   const d=document.createElement("div");
   d.className="item";
-  d.innerHTML=`
-    <div class="delete" onclick="del(${i})">❌</div>
-    ${isVideo
-      ? `<video controls src="${data[i].src}"></video>`
-      : `<img src="${data[i].src}" onclick="openModal(this.src)">`
-    }
-    <div class="label">${isVideo?"Video":"Image"}</div>
-  `;
+
+  if(data[i].type.startsWith("video")){
+    d.innerHTML=`<video controls src="${data[i].src}"></video>
+    <div class="label">Video</div>`;
+  }else{
+    d.innerHTML=`<img src="${data[i].src}" onclick="zoom(this.src)">
+    <div class="label">Image</div>`;
+  }
   itemsBox.replaceChild(d,itemsBox.children[i]);
 }
 
-// DELETE
+/* Zoom Image */
+function zoom(src){
+  viewerImg.src=src;
+  viewer.style.display="flex";
+}
+
+/* Delete */
 function del(i){
-  if(!confirm("Delete?")) return;
-  const data=JSON.parse(localStorage.getItem("vault"));
-  data.splice(i,1);
-  localStorage.setItem("vault",JSON.stringify(data));
-  load();
-}
-
-// IMAGE MODAL
-function openModal(src){
-  document.getElementById("modalImg").src=src;
-  document.getElementById("modal").style.display="flex";
-}
-function closeModal(){
-  document.getElementById("modal").style.display="none";
-}
-
-load();
-</script>
-
-</body>
-</html>
+  if(!confirm("Delete?"))return;
+  const data=JSON.parse(localStorage.getItem
