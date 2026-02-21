@@ -2,115 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Elyas Vault</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Private Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+*{box-sizing:border-box;font-family:Arial}
+
 body{
   margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#ff5edf,#7f7cff);
+  min-height:100vh;
+  background:linear-gradient(135deg,#FF00A6,#00D2FF);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+
+.name3d{
+  position:fixed;
+  top:15px;
+  right:20px;
+  font-weight:bold;
+  font-size:24px;
   color:#fff;
-}
-header{padding:15px;font-size:22px;font-weight:bold}
-#items{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
-.item{background:rgba(0,0,0,.35);border-radius:16px;padding:10px}
-img,video{width:100%;border-radius:12px}
-.label{text-align:center;margin-top:6px;font-size:13px}
-
-#add{
-  position:fixed;bottom:25px;right:25px;
-  width:60px;height:60px;border-radius:50%;
-  background:#fff;color:#000;font-size:36px;
-  display:flex;align-items:center;justify-content:center;
+  text-shadow:2px 2px 6px #000;
 }
 
-#modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);
-  display:none;align-items:center;justify-content:center;
+.card{
+  width:360px;
+  padding:25px;
+  border-radius:25px;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(10px);
+  box-shadow:0 30px 80px rgba(0,0,0,.3);
 }
-.box{
-  background:#111;padding:20px;border-radius:16px;width:90%;max-width:300px
+
+input,textarea,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:none;
+  border-radius:12px;
 }
-button,input,textarea{
-  width:100%;margin-top:10px;padding:10px;border-radius:10px;border:none
+
+button{
+  background:#00B5E2;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
 }
-button{background:#7f7cff;color:#fff;font-size:16px}
+
+.items{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:15px;
+}
+
+.item{
+  background:#fff;
+  padding:10px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  position:relative;
+  animation:pop .4s ease;
+}
+
+@keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+.delete{
+  position:absolute;
+  top:6px;
+  right:8px;
+  cursor:pointer;
+}
+
+.lock{
+  position:absolute;
+  top:6px;
+  left:8px;
+  cursor:pointer;
+}
+
+img,video{
+  width:100%;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.label{
+  text-align:center;
+  margin-top:6px;
+  font-size:13px;
+  font-weight:bold;
+  color:#555;
+}
+
+/* ===== IMAGE MODAL ===== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal img{
+  max-width:90%;
+  max-height:90%;
+  border-radius:20px;
+  animation:zoom .3s ease;
+}
+
+@keyframes zoom{
+  from{transform:scale(.6)}
+  to{transform:scale(1)}
+}
 </style>
 </head>
 
 <body>
 
-<header>Elyas Vault</header>
-<div id="items"></div>
-<div id="add" onclick="openModal()">+</div>
+<div class="name3d">Elyas Saeedawi</div>
 
-<div id="modal">
-  <div class="box">
-    <button onclick="pickImage()">📷 Image</button>
-    <button onclick="pickVideo()">🎥 Video</button>
-    <textarea id="textInput" placeholder="Write text..."></textarea>
-    <button onclick="saveText()">Save Text</button>
-    <button onclick="closeModal()">Cancel</button>
-  </div>
+<div class="card">
+  <h2>Your Private Vault</h2>
+
+  <textarea id="note" placeholder="Write anything..."></textarea>
+  <button onclick="saveText()">Save Text</button>
+
+  <input type="file" id="file" multiple accept="image/*,video/*">
+  <button onclick="saveFile()">Save File</button>
+
+  <div class="items" id="items"></div>
 </div>
 
-<input type="file" id="file" hidden>
+<!-- IMAGE MODAL -->
+<div class="modal" id="modal" onclick="closeModal()">
+  <img id="modalImg">
+</div>
+
+<audio id="unlockSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav">
+</audio>
 
 <script>
-let vault = JSON.parse(localStorage.getItem("vault")||"[]");
-const items=document.getElementById("items");
-const file=document.getElementById("file");
+const itemsBox = document.getElementById("items");
+const sound = document.getElementById("unlockSound");
 
-function render(){
-  items.innerHTML="";
-  vault.forEach(v=>{
-    let d=document.createElement("div");
-    d.className="item";
-    if(v.type==="image") d.innerHTML=`<img src="${v.src}"><div class="label">Image</div>`;
-    if(v.type==="video") d.innerHTML=`<video controls src="${v.src}"></video><div class="label">Video</div>`;
-    if(v.type==="text") d.innerHTML=`<div>${v.text}</div><div class="label">Text</div>`;
-    items.appendChild(d);
+// SAVE TEXT
+function saveText(){
+  const note = document.getElementById("note").value;
+  if(!note) return alert("Write something");
+  const data = JSON.parse(localStorage.getItem("vault") || "[]");
+  data.push({type:"text",content:note});
+  localStorage.setItem("vault",JSON.stringify(data));
+  document.getElementById("note").value="";
+  load();
+}
+
+// SAVE FILE
+document.getElementById("file").onchange = ()=>{
+  [...file.files].forEach(f=>{
+    const pwd = prompt("Set password");
+    if(!pwd) return;
+    const r = new FileReader();
+    r.onload = ()=>{
+      const data = JSON.parse(localStorage.getItem("vault")||"[]");
+      data.push({type:f.type,src:r.result,password:pwd});
+      localStorage.setItem("vault",JSON.stringify(data));
+      load();
+    }
+    r.readAsDataURL(f);
   });
 }
-render();
 
-function openModal(){modal.style.display="flex"}
-function closeModal(){modal.style.display="none"}
+// LOAD ITEMS
+function load(){
+  itemsBox.innerHTML="";
+  const data = JSON.parse(localStorage.getItem("vault")||"[]");
 
-function pickImage(){
-  file.accept="image/*";
-  file.onchange=e=>readFile("image");
-  file.click();
+  data.forEach((item,i)=>{
+    const d=document.createElement("div");
+    d.className="item";
+
+    if(item.type==="text"){
+      d.innerHTML=`
+        <div class="delete" onclick="del(${i})">❌</div>
+        <p>${item.content}</p>
+        <div class="label">Text</div>
+      `;
+    }else{
+      const label=item.type.startsWith("video")?"Video":"Image";
+      d.innerHTML=`
+        <div class="delete" onclick="del(${i})">❌</div>
+        <div class="lock" onclick="unlock(${i})">🔒</div>
+        <div class="label">${label}</div>
+      `;
+    }
+    itemsBox.appendChild(d);
+  });
 }
 
-function pickVideo(){
-  file.accept="video/*";
-  file.onchange=e=>readFile("video");
-  file.click();
+// UNLOCK
+function unlock(i){
+  const data=JSON.parse(localStorage.getItem("vault"));
+  const pwd=prompt("Enter password");
+  if(pwd!==data[i].password) return alert("Wrong password");
+  sound.play();
+
+  const isVideo=data[i].type.startsWith("video");
+  const d=document.createElement("div");
+  d.className="item";
+  d.innerHTML=`
+    <div class="delete" onclick="del(${i})">❌</div>
+    ${isVideo
+      ? `<video controls src="${data[i].src}"></video>`
+      : `<img src="${data[i].src}" onclick="openModal(this.src)">`
+    }
+    <div class="label">${isVideo?"Video":"Image"}</div>
+  `;
+  itemsBox.replaceChild(d,itemsBox.children[i]);
 }
 
-function readFile(type){
-  const r=new FileReader();
-  r.onload=()=>{
-    vault.push({type,src:r.result});
-    save();
-  }
-  r.readAsDataURL(file.files[0]);
+// DELETE
+function del(i){
+  if(!confirm("Delete?")) return;
+  const data=JSON.parse(localStorage.getItem("vault"));
+  data.splice(i,1);
+  localStorage.setItem("vault",JSON.stringify(data));
+  load();
 }
 
-function saveText(){
-  const t=textInput.value.trim();
-  if(!t) return;
-  vault.push({type:"text",text:t});
-  textInput.value="";
-  save();
+// IMAGE MODAL
+function openModal(src){
+  document.getElementById("modalImg").src=src;
+  document.getElementById("modal").style.display="flex";
+}
+function closeModal(){
+  document.getElementById("modal").style.display="none";
 }
 
-function save(){
-  localStorage.setItem("vault",JSON.stringify(vault));
-  closeModal();
-  render();
-}
+load();
 </script>
 
 </body>
